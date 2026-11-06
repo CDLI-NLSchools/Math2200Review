@@ -5979,7 +5979,7 @@ function tags(q){
 }
 var current=null,checkedCount=0,correctCount=0,checkMode="each",endGraded=false;
 function startOnline(){
-  var s=settings();var res=drawSet(s.units,s.inds,s.count,s.mix,s.order,s.midCap,SHEET_MODE==="worksheet"?worksheetPred:null);
+  var s=settings();var res=drawSet(s.units,s.inds,s.count,s.mix,s.order,s.midCap);
   current=res.items;checkedCount=0;correctCount=0;checkMode=(s.chk==="end")?"end":"each";endGraded=false;
   var box=$("session");
   if(!current.length){box.innerHTML='<div class="card"><p>'+(s.units.length?"No questions match that selection yet.":"Choose at least one unit above ,  or use the Mid-course review or Final review button ,  then start again.")+'</p></div>';return;}
@@ -6197,7 +6197,7 @@ var SHEET_MODE="sheet";
 function startSheet(){SHEET_MODE="sheet";startSheetMode();}
 function startWorksheet(){SHEET_MODE="worksheet";startSheetMode();}
 function startSheetMode(){
-  var s=settings();var res=drawSet(s.units,s.inds,s.count,s.mix,s.order,s.midCap);
+  var s=settings();var res=drawSet(s.units,s.inds,s.count,s.mix,s.order,s.midCap,SHEET_MODE==="worksheet"?worksheetPred:null);
   if(!res.items.length){$("session").innerHTML='<div class="card"><p>'+(s.units.length?"No questions match that selection yet.":"Choose at least one unit above ,  or use the Mid-course review or Final review button ,  then start again.")+'</p></div>';return;}
   var unitNames=s.units.map(function(u){return "Unit "+u;}).join(", ");
   var html='<div class="nameline"><div>Name:<span></span></div><div>Date:<span></span></div></div>';
