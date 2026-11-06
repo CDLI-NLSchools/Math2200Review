@@ -3013,9 +3013,9 @@ E("u4-model-radical",4,["1.20"],3,"gen",function(){
       {key:"playground swing",text:"A playground swing, modelled as a pendulum",Ts:[1.8,2.2,2.6,3.0]}];
     var pc=pick(penCtx),T=pick(pc.Ts);
     var L=9.8*Math.pow(T/(2*Math.PI),2);
-    return numq(pc.text+" has a period of "+fmt(T,1)+" s. The period is modelled by \\(T = 2\\pi\\sqrt{\\frac{L}{9.8}}\\), where \\(L\\) is the length in metres. Find the length, in metres.",
+    return numq(pc.text+" has a period of "+fmt(T,1)+" s. The period is modelled by \\(T = 2\\pi\\sqrt{\\frac{L}{9.8}}\\), where \\(L\\) is the length of the pendulum in metres. Find the length of the pendulum, in metres.",
       L,0.03,
-      "Substitute \\(T = "+fmt(T,1)+"\\) and solve the radical equation for \\(L\\): \\[ \\begin{aligned} "+fmt(T,1)+" &= 2\\pi\\sqrt{\\frac{L}{9.8}} \\\\ \\frac{"+fmt(T,1)+"}{2\\pi} &= \\sqrt{\\frac{L}{9.8}} \\\\ \\left(\\frac{"+fmt(T,1)+"}{2\\pi}\\right)^2 &= \\frac{L}{9.8} \\\\ L &= 9.8 \\times \\left(\\frac{"+fmt(T,1)+"}{2\\pi}\\right)^2 \\\\ &\\approx "+fmt(L,2)+" \\end{aligned} \\] The length is about <b>"+fmt(L,2)+" m</b>.",
+      "Substitute \\(T = "+fmt(T,1)+"\\) and solve the radical equation for \\(L\\): \\[ \\begin{aligned} "+fmt(T,1)+" &= 2\\pi\\sqrt{\\frac{L}{9.8}} \\\\ \\frac{"+fmt(T,1)+"}{2\\pi} &= \\sqrt{\\frac{L}{9.8}} \\\\ \\left(\\frac{"+fmt(T,1)+"}{2\\pi}\\right)^2 &= \\frac{L}{9.8} \\\\ L &= 9.8 \\times \\left(\\frac{"+fmt(T,1)+"}{2\\pi}\\right)^2 \\\\ &\\approx "+fmt(L,2)+" \\end{aligned} \\] The length of the pendulum is about <b>"+fmt(L,2)+" m</b>.",
       {ctx:"pendulum: "+pc.key,T:T,L:Math.round(L*1000)/1000});
   }
   var fallCtx=[
