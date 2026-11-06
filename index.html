@@ -855,15 +855,16 @@ E("u1-point-ratios", 1, ["7.15"], 2, "gen", function () {
   if (Math.random() < 0.5) { var t = lx; lx = ly; ly = t; }
   var x = lx * pick([1, -1]), y = ly * pick([1, -1]);
   var kind = pick(["sin", "cos", "tan"]);
+  var kd = "\\" + kind;
   var num = kind === "sin" ? y : kind === "cos" ? x : y;
   var den = kind === "sin" ? r : kind === "cos" ? r : x;
   var corr = "\\(" + u1fr(num, den) + "\\)";
   var candBodies = [u1fr(x, r), u1fr(y, r), u1fr(y, x), u1fr(x, y), u1fr(-y, r), u1fr(-x, r), u1fr(-y, x), u1fr(r, y), u1fr(r, x)];
   var dis = u1dist3(u1fr(num, den), candBodies).map(function (s) { return "\\(" + s + "\\)"; });
   var defn = kind === "sin" ? "\\sin\\theta = \\frac{y}{r}" : kind === "cos" ? "\\cos\\theta = \\frac{x}{r}" : "\\tan\\theta = \\frac{y}{x}";
-  return mcq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle \\(\\theta\\) in standard position. What is the exact value of \\(" + kind + " \\theta\\)?",
+  return mcq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle \\(\\theta\\) in standard position. What is the exact value of \\(" + kd + " \\theta\\)?",
     corr, dis,
-    "First find the distance from the origin: \\(r = \\sqrt{(" + x + ")^2 + (" + y + ")^2} = " + r + "\\). Using \\(" + defn + "\\): \\[ \\begin{aligned} \\" + kind + " \\theta &= " + corr.slice(2, -2) + " \\end{aligned} \\] The exact value is <b>" + corr + "</b>.",
+    "First find the distance from the origin: \\(r = \\sqrt{(" + x + ")^2 + (" + y + ")^2} = " + r + "\\). Using \\(" + defn + "\\): \\[ \\begin{aligned} \\" + kd + " \\theta &= " + corr.slice(2, -2) + " \\end{aligned} \\] The exact value is <b>" + corr + "</b>.",
     { x: x, y: y, kind: kind });
 });
 
@@ -892,6 +893,7 @@ E("u1-axis-ratios", 1, ["7.18"], 2, "gen", function () {
   var d = pick(dirs), m = ri(2, 9);
   var x = d.dx * m, y = d.dy * m;
   var kind = pick(["sin", "cos", "tan"]);
+  var kd = "\\" + kind;
   var corr, why;
   if (kind === "sin") { corr = "" + d.dy; why = "\\sin\\theta = \\frac{y}{r} = \\frac{" + y + "}{" + m + "}"; }
   else if (kind === "cos") { corr = "" + d.dx; why = "\\cos\\theta = \\frac{x}{r} = \\frac{" + x + "}{" + m + "}"; }
@@ -899,8 +901,8 @@ E("u1-axis-ratios", 1, ["7.18"], 2, "gen", function () {
   else { corr = "0"; why = "\\tan\\theta = \\frac{y}{x} = \\frac{" + y + "}{" + x + "}"; }
   var all = ["-1", "0", "1", "undefined"];
   var dis = all.filter(function (s) { return s !== corr; });
-  var sol = "The point is on the terminal arm of the " + d.deg + "° angle, and \\(r = " + m + "\\). Using the definition, \\(" + why + "\\)." + (corr === "undefined" ? " Division by zero is undefined." : "") + " The exact value of \\(" + kind + " " + d.deg + "^\\circ\\) is <b>" + corr + "</b>.";
-  return mcq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle \\(\\theta\\) in standard position. Without using technology, determine the exact value of \\(" + kind + "\\theta\\).",
+  var sol = "The point is on the terminal arm of the " + d.deg + "° angle, and \\(r = " + m + "\\). Using the definition, \\(" + why + "\\)." + (corr === "undefined" ? " Division by zero is undefined." : "") + " The exact value of \\(" + kd + " " + d.deg + "^\\circ\\) is <b>" + corr + "</b>.";
+  return mcq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle \\(\\theta\\) in standard position. Without using technology, determine the exact value of \\(" + kd + "\\theta\\).",
     corr, dis, sol,
     { deg: d.deg, kind: kind, m: m });
 });
@@ -943,6 +945,7 @@ E("u1-solve-equation", 1, ["7.19"], 2, "gen", function () {
       { ratio: "tan", a: "0", ref: 0, sign: 1 }
     ];
     var e = pick(table);
+    var rd = "\\" + e.ratio;
     var corrP = pairFor(e.ratio, e.ref, e.sign);
     var others = e.ratio === "sin" ? ["cos", "tan"] : e.ratio === "cos" ? ["sin", "tan"] : ["sin", "cos"];
     var candPs = [
@@ -954,12 +957,13 @@ E("u1-solve-equation", 1, ["7.19"], 2, "gen", function () {
       pairFor(e.ratio, e.ref === 45 ? 30 : 45, e.sign)
     ];
     var corr = pairFmt(corrP);
-    return mcq("Solve \\(" + e.ratio + " \\theta = " + e.a + "\\) for \\(0^\\circ \\le \\theta < 360^\\circ\\).",
+    return mcq("Solve \\(" + rd + " \\theta = " + e.a + "\\) for \\(0^\\circ \\le \\theta < 360^\\circ\\).",
       corr, distPairs(corrP, candPs),
-      "The reference angle is " + e.ref + "°, since \\(" + e.ratio + " " + e.ref + "^\\circ = " + (e.a === "0" ? "0" : e.a.replace("-", "")) + "\\). The ratio \\(" + e.ratio + "\\) is " + (e.sign > 0 ? "positive" : "negative") + " in the quadrants that give the solutions \\(\\theta = " + corrP[0] + "^\\circ\\) and \\(\\theta = " + corrP[1] + "^\\circ\\). The solutions are <b>" + corr + "</b>.",
+      "The reference angle is " + e.ref + "°, since \\(" + rd + " " + e.ref + "^\\circ = " + (e.a === "0" ? "0" : e.a.replace("-", "")) + "\\). The ratio \\(" + rd + "\\) is " + (e.sign > 0 ? "positive" : "negative") + " in the quadrants that give the solutions \\(\\theta = " + corrP[0] + "^\\circ\\) and \\(\\theta = " + corrP[1] + "^\\circ\\). The solutions are <b>" + corr + "</b>.",
       { mode: "exact", ratio: e.ratio, ref: e.ref, sign: e.sign });
   }
   var ratio = pick(["sin", "cos"]);
+  var rd2 = "\\" + ratio;
   var av = ri(15, 95) / 100, sign = pick([1, -1]);
   var ref = Math.round((ratio === "sin" ? Math.asin(av) : Math.acos(av)) * 180 / Math.PI);
   var corrP2 = pairFor(ratio, ref, sign);
@@ -972,9 +976,9 @@ E("u1-solve-equation", 1, ["7.19"], 2, "gen", function () {
   ];
   var corr2 = pairFmt(corrP2);
   var aStr = (sign < 0 ? "-" : "") + fmt(av);
-  return mcq("Solve \\(" + ratio + " \\theta = " + aStr + "\\) for \\(0^\\circ \\le \\theta < 360^\\circ\\), to the nearest degree.",
+  return mcq("Solve \\(" + rd2 + " \\theta = " + aStr + "\\) for \\(0^\\circ \\le \\theta < 360^\\circ\\), to the nearest degree.",
     corr2, distPairs(corrP2, candPs2),
-    "The reference angle is \\(" + ratio + "^{-1}(" + fmt(av) + ") \\approx " + ref + "^\\circ\\). The ratio \\(" + ratio + "\\) is " + (sign > 0 ? "positive" : "negative") + " in the quadrants that give the solutions \\(\\theta = " + corrP2[0] + "^\\circ\\) and \\(\\theta = " + corrP2[1] + "^\\circ\\). The solutions are <b>" + corr2 + "</b>.",
+    "The reference angle is \\(" + rd2 + "^{-1}(" + fmt(av) + ") \\approx " + ref + "^\\circ\\). The ratio \\(" + rd2 + "\\) is " + (sign > 0 ? "positive" : "negative") + " in the quadrants that give the solutions \\(\\theta = " + corrP2[0] + "^\\circ\\) and \\(\\theta = " + corrP2[1] + "^\\circ\\). The solutions are <b>" + corr2 + "</b>.",
     { mode: "dec", ratio: ratio, a: aStr });
 });
 
@@ -982,6 +986,7 @@ E("u1-solve-equation", 1, ["7.19"], 2, "gen", function () {
 E("u1-exact-values", 1, ["7.20"], 2, "gen", function () {
   var degs = [120, 135, 150, 210, 225, 240, 300, 315, 330, 30, 45, 60];
   var deg = pick(degs), kind = pick(["sin", "cos", "tan"]);
+  var kd = "\\" + kind;
   var pres = pick([deg, deg, deg + 360, deg - 360]);
   var ex = u1exact(kind, deg);
   var ref = u1refOf(deg);
@@ -998,9 +1003,9 @@ E("u1-exact-values", 1, ["7.20"], 2, "gen", function () {
   var dis = u1dist3(ex.s, candBodies).map(function (s) { return "\\(" + s + "\\)"; });
   var q = u1quadOf(deg);
   var cotNote = pres === deg ? "" : "The angle " + pres + "° is coterminal with " + deg + "°, so it has the same ratio values. ";
-  return mcq("Determine the exact value of \\(" + kind + " " + pres + "^\\circ\\).",
+  return mcq("Determine the exact value of \\(" + kd + " " + pres + "^\\circ\\).",
     corr, dis,
-    cotNote + "The reference angle for " + deg + "° is " + ref + "°, and the angle terminates in Quadrant " + ["I", "II", "III", "IV"][q - 1] + ", where \\(" + kind + "\\) is " + (ex.v < 0 ? "negative" : "positive") + ". Since \\(" + kind + " " + ref + "^\\circ = " + (u1exact(kind, ref) || {}).s + "\\), the value is \\[ \\begin{aligned} " + kind + " " + deg + "^\\circ &= " + ex.s + " \\end{aligned} \\] The exact value is <b>" + corr + "</b>.",
+    cotNote + "The reference angle for " + deg + "° is " + ref + "°, and the angle terminates in Quadrant " + ["I", "II", "III", "IV"][q - 1] + ", where \\(" + kd + "\\) is " + (ex.v < 0 ? "negative" : "positive") + ". Since \\(" + kd + " " + ref + "^\\circ = " + (u1exact(kind, ref) || {}).s + "\\), the value is \\[ \\begin{aligned} " + kd + " " + deg + "^\\circ &= " + ex.s + " \\end{aligned} \\] The exact value is <b>" + corr + "</b>.",
     { deg: deg, pres: pres, kind: kind });
 });
 
