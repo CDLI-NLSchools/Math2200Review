@@ -6114,7 +6114,7 @@ function composeExam(units,inds){
     var guard=0;
     while(count>0&&guard++<500&&cands.length){
       var q=genFrom(pick(cands));var c=canonQ(q);
-      if(seen[c])continue;seen[c]=1;srItems.push({q:q,marks:1});count--;
+      if(q.type!=="mc"||seen[c])continue;seen[c]=1;srItems.push({q:q,marks:1});count--;
     }
     return count;
   }
