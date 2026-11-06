@@ -2839,9 +2839,9 @@ E("u4-simplify-ops",4,["1.13"],2,"gen",function(){
     {d1:d1,d2:d2,b:bD,shape:shape});
 });
 
-/* ---------- 1.14: rationalize a monomial or binomial denominator (L2) ---------- */
-E("u4-rationalize",4,["1.14"],2,"gen",function(){
-  var shape=pick(["mono","monoCoef","binom","twoRad"]);
+/* ---------- 1.14: rationalize a monomial denominator (L2) ---------- */
+E("u4-rationalize-mono",4,["1.14"],2,"gen",function(){
+  var shape=pick(["mono","monoCoef"]);
   if(shape==="mono"||shape==="monoCoef"){
     var n=ri(2,9),m=pick([2,3,5,6,7,10]);
     var a=(shape==="mono")?1:ri(2,5);
@@ -2854,6 +2854,11 @@ E("u4-rationalize",4,["1.14"],2,"gen",function(){
       "Multiply the numerator and denominator by \\(\\sqrt{"+m+"}\\), which makes the denominator rational: \\[ \\begin{aligned} \\frac{"+n+"}{"+den+"} &= \\frac{"+n+"\\sqrt{"+m+"}}{"+D+"} \\\\ &= "+cor+" \\end{aligned} \\] So the rationalized form is <b>"+u4wrap(cor)+"</b>\\).",
       {n:n,m:m,a:a,shape:shape});
   }
+});
+
+/* ---------- 1.14: rationalize a binomial denominator (L2) ---------- */
+E("u4-rationalize-binomial",4,["1.14"],2,"gen",function(){
+  var shape=pick(["binom","twoRad"]);
   if(shape==="binom"){
     var a2=ri(2,6),b2=pick([2,3,5,6,7,10,11,13].filter(function(z){return z<a2*a2&&z!==a2;})),n2=ri(1,6);
     var D2=a2*a2-b2,g2=u4gcd(n2,D2),n2r=n2/g2,D2r=D2/g2;
@@ -5785,7 +5790,7 @@ E("u9-crossover", 9, ["4.59", "4.60"], 3, "gen", function () {
 /* Exam Section B draws only from these entries (marks per question); every other
    entry is selected-response only in exam mode. Worksheet mode uses these plus
    all numeric-answer entries. */
-var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-rationalize":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3};
+var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3,"u4-rationalize-mono":1,"u4-rationalize-binomial":3};
 /* BANK-SRC-END */
 </script>
 
@@ -6108,7 +6113,7 @@ function composeExam(units,inds){
     return count;
   }
   var miss=0;for(var L=1;L<=3;L++){miss+=takeSR(L,srT[L-1]);}
-  var crPool=pool.filter(function(e){return typeof CR_MARKS!=="undefined"&&CR_MARKS[e.id]!==undefined&&e.level>=2;}).map(function(e){return{e:e,marks:CR_MARKS[e.id]};});
+  var crPool=pool.filter(function(e){return typeof CR_MARKS!=="undefined"&&CR_MARKS[e.id]!==undefined&&CR_MARKS[e.id]>=2&&e.level>=2;}).map(function(e){return{e:e,marks:CR_MARKS[e.id]};});
   var l3=crPool.filter(function(x){return x.e.level===3;}),l2=crPool.filter(function(x){return x.e.level===2;});
   var l3pick=null,l3sum=0;var t3=single?[5,4,6]:[8,9,7];
   for(var t=0;t<t3.length&&!l3pick;t++){l3pick=subsetSumMarks(l3,t3[t]);if(l3pick)l3sum=t3[t];}
