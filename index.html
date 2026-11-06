@@ -67,6 +67,12 @@
   .sheetPrev .ws{border-bottom:1px solid #ddd;}
   .sheetPrev.editing{outline:2px dashed var(--acc);outline-offset:3px;}
   .ws{border:1.5px solid #b9b2a2;border-radius:4px;margin:8px 0 4px;}
+  .recGrid{border-collapse:collapse;margin:8px 0 4px;}
+  .recGrid td{border:1px solid #999;padding:6px 12px;font-size:.98rem;white-space:nowrap;}
+  .recGrid .lt{margin:0 4px;color:#444;}
+  .recGrid .rk{color:#000;font-weight:700;text-decoration:underline;}
+  .solAppendix{columns:2;column-gap:30px;font-size:.85rem;line-height:1.45;}
+  .solAppendix .solp{break-inside:avoid;margin:0 0 9px;}
   .nameline{display:flex;gap:30px;font-size:.95rem;margin-bottom:14px;}
   .nameline span{border-bottom:1px solid #444;padding:0 90px 2px 6px;}
   @media print{
@@ -6129,6 +6135,18 @@ function composeExam(units,inds){
   } else short=true;
   return {srItems:srItems,crItems:crItems,srMarks:srItems.length,crMarks:crMarks,l3Marks:l3sum,total:srItems.length+crMarks,single:single,short:short};
 }
+function recGrid(items,withKey){
+  var n=items.length,cols=n<=11?2:3,per=Math.ceil(n/cols);
+  var h='<table class="recGrid"><tbody>';
+  for(var r=0;r<per;r++){h+='<tr>';
+    for(var c=0;c<cols;c++){var ix=c*per+r;
+      if(ix>=n){h+='<td></td>';continue;}
+      var cell='<b>'+(ix+1)+'.</b> ';
+      for(var L=0;L<4;L++){var isK=withKey&&items[ix].q.correct===L;cell+='<span class="lt'+(isK?' rk':'')+'">'+"ABCD"[L]+ '</span>';}
+      h+='<td>'+cell+'</td>';}
+    h+='</tr>';}
+  return h+'</tbody></table>';
+}
 function startExam(){
   var s=settings();
   var ex=composeExam(s.units,s.inds);
@@ -6139,14 +6157,15 @@ function startExam(){
   var title=single?"Math 2200: Practice Unit Test":"Math 2200: Practice Exam";
   var paper='<div class="nameline"><div>Name:<span></span></div><div>Date:<span></span></div></div>';
   paper+='<h1 style="font-size:1.3rem;">'+title+'</h1><p>'+scope+' \u00B7 Total marks: '+ex.total+'</p>';
-  paper+='<p style="font-size:.92rem;">Answer all questions. In Section A, choose the best answer for each question. In Section B, show all workings in the space provided; marks are shown beside each question.</p>';
+  paper+='<p style="font-size:.92rem;">Answer all questions. In Section A, choose the best answer for each question and record it on the answer record at the end of Section A. In Section B, show all workings in the space provided; marks are shown beside each question.</p>';
   var n=0;
   paper+='<h2 style="font-size:1.05rem;">Section A: Selected Response ('+ex.srMarks+' marks)</h2>';
   ex.srItems.forEach(function(it){n++;var q=it.q;
     paper+='<div class="pq"><p><b>'+n+'.</b></p><div class="prompt">'+stepHTML(q.prompt)+'</div>';
     if(q.figure)paper+='<div class="fig">'+q.figure+'</div>';
-    if(q.type==="mc")paper+='<div class="opts">'+q.options.map(function(o){return '<label style="display:block;margin:4px 0;">\u25CB '+o+'</label>';}).join("")+'</div>';
+    if(q.type==="mc")paper+='<div class="opts">'+q.options.map(function(o,oi){return '<label style="display:block;margin:4px 0;"><b>'+"ABCD"[oi]+'.</b> '+o+'</label>';}).join("")+'</div>';
     paper+='</div>';});
+  paper+='<h2 style="font-size:1.05rem;">Answer record</h2><p style="font-size:.92rem;">Circle one letter for each Section A question.</p>'+recGrid(ex.srItems,false);
   paper+='<h2 style="font-size:1.05rem;">Section B: Constructed Response ('+ex.crMarks+' marks)</h2>';
   if(!ex.crItems.length)paper+='<p>No constructed-response questions are available for this selection yet.</p>';
   ex.crItems.forEach(function(it){n++;var q=it.q;
@@ -6156,11 +6175,15 @@ function startExam(){
     paper+='</div>';});
   paper+='<p style="font-size:.85rem;color:#555;">Built to the 2026-2027 tables of specifications as closely as the question bank allows: selected response '+ex.srMarks+' marks, constructed response '+ex.crMarks+' marks, of which Level 3 carries '+ex.l3Marks+' marks.</p>';
   var key='<h1 style="font-size:1.3rem;">'+title+': Answer Key</h1><p>'+scope+' \u00B7 Total marks: '+ex.total+'</p>';
-  key+='<h2 style="font-size:1.05rem;">Section A answers</h2><p style="line-height:1.6;">';
-  var m=0;ex.srItems.forEach(function(it){m++;var q=it.q;var ans=q.type==="mc"?esc(q.options[q.correct]):(q.type==="num"?fmt(q.answer):esc(q.answers[0]));key+='<b>'+m+'.</b> '+ans+' &nbsp; ';});
-  key+='</p><h2 style="font-size:1.05rem;">Section B: worked solutions</h2>';
+  key+='<h2 style="font-size:1.05rem;">Section A answers</h2><p style="font-size:.92rem;">The correct letter for each question, in the same layout as the answer record on the student paper.</p>';
+  key+=recGrid(ex.srItems,true);
+  key+='<h2 style="font-size:1.05rem;">Section B: worked solutions</h2>';
+  var m=ex.srItems.length;
   ex.crItems.forEach(function(it){m++;var q=it.q;var ans=q.type==="mc"?esc(q.options[q.correct]):(q.type==="num"?fmt(q.answer):esc(q.answers[0]));
     key+='<div class="solp"><p><b>'+m+'.</b> Answer: <b>'+ans+'</b> ('+it.marks+' marks)</p><div style="line-height:1.5;font-size:.92rem;">'+stepHTML(q.solution)+'</div></div>';});
+  key+='<h2 style="font-size:1.05rem;">Appendix: Section A worked solutions</h2><div class="solAppendix">';
+  ex.srItems.forEach(function(it,ix){var q=it.q;key+='<div class="solp"><p><b>'+(ix+1)+'.</b> <b>('+"ABCD"[q.correct]+')</b></p><div>'+stepHTML(q.solution)+'</div></div>';});
+  key+='</div>';
   $("printArea").innerHTML=paper;
   $("session").innerHTML='<div class="card"><p>Your '+(single?"practice unit test":"practice exam")+' is ready: '+ex.srItems.length+' selected-response questions and '+ex.crItems.length+' constructed-response questions, '+ex.total+' marks in total. The exam paper and the answer key print separately.</p>'
     +(ex.short?'<p class="thinNote">Heads up: the bank could not fill every exam slot for this selection yet, so this paper runs short of the full blueprint.</p>':"")
