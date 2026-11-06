@@ -576,7 +576,2479 @@ var UNIT_IND={
 var BANK=[];
 function E(id,unit,indicators,level,kind,gen){BANK.push({id:id,unit:unit,indicators:indicators,level:level,kind:kind,gen:gen});}
 /* BANK-SRC-BEGIN */
-/* Bank source is spliced here by inject_bank.py (skeleton: no entries yet). */
+/* Math 2200 Review bank source. Assembled from tranche1/unit1.js to unit4.js
+   (mid scope). Spliced into index.html by inject_bank.py. */
+
+/* ================= Unit 1: Trigonometry ================= */
+/* ================= Unit 1: Trigonometry =================
+   Helpers are prefixed u1; the only other top-level statements are E(...) calls.
+   18 entries: L1 4, L2 11, L3 3. Codes: MA2200.7.1 to 7.22 (all degrees; this
+   course has no radians). Cluster A: the sine and cosine laws (7.1 to 7.6).
+   Cluster B: angles in standard position (7.7 to 7.22). */
+
+function u1gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a || 1; }
+
+function u1fr(n, d) { /* signed reduced fraction as a KaTeX body (no delimiters) */
+  if (d < 0) { n = -n; d = -d; }
+  if (n === 0) return "0";
+  var g = u1gcd(n, d); n /= g; d /= g;
+  var s = n < 0 ? "-" : ""; n = Math.abs(n);
+  if (d === 1) return s + n;
+  return s + "\\frac{" + n + "}{" + d + "}";
+}
+
+function u1dist3(correct, cands) { /* first three candidate strings that differ from the key and each other */
+  var out = [];
+  for (var i = 0; i < cands.length; i++) {
+    var c = cands[i];
+    if (c !== null && c !== undefined && c !== correct && out.indexOf(c) < 0) out.push(c);
+    if (out.length === 3) break;
+  }
+  return out;
+}
+
+function u1quadOf(deg) { var p = ((deg % 360) + 360) % 360; return p < 90 ? 1 : p < 180 ? 2 : p < 270 ? 3 : 4; }
+function u1refOf(deg) { var p = ((deg % 360) + 360) % 360; return p <= 90 ? p : p <= 180 ? 180 - p : p <= 270 ? p - 180 : 360 - p; }
+
+function u1mag(kind, av) { /* exact magnitude string for a special-angle ratio value */
+  var table;
+  if (kind === "sin" || kind === "cos") table = [[0, "0"], [0.5, "\\frac{1}{2}"], [0.7071, "\\frac{\\sqrt{2}}{2}"], [0.866, "\\frac{\\sqrt{3}}{2}"], [1, "1"]];
+  else table = [[0, "0"], [0.5774, "\\frac{\\sqrt{3}}{3}"], [1, "1"], [1.7321, "\\sqrt{3}"]];
+  for (var i = 0; i < table.length; i++) if (Math.abs(av - table[i][0]) < 0.01) return table[i][1];
+  return null;
+}
+
+function u1exact(kind, deg) { /* {s, v}: exact string and value of sin/cos/tan at a special degree, or null */
+  var th = deg * Math.PI / 180, sv = Math.sin(th), cv = Math.cos(th), v;
+  if (kind === "sin") v = sv;
+  else if (kind === "cos") v = cv;
+  else { if (Math.abs(cv) < 1e-9) return null; v = sv / cv; }
+  var mag = u1mag(kind, Math.abs(v));
+  if (mag === null) return null;
+  return { s: (v < 0 && mag !== "0" ? "-" : "") + mag, v: v };
+}
+
+function u1armSVG(deg) { /* axes, unit circle, rotation arc and terminal arm for a standard-position angle */
+  var th = deg * Math.PI / 180, cx = 88, cy = 88, R = 64;
+  var ex = cx + R * Math.cos(th), ey = cy - R * Math.sin(th);
+  var large = Math.abs(deg) > 180 ? 1 : 0, sweep = deg >= 0 ? 0 : 1;
+  var ax = cx + 38 * Math.cos(th), ay = cy - 38 * Math.sin(th);
+  var out = '<svg viewBox="0 0 176 176" width="176" height="176" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Angle in standard position">';
+  out += '<circle cx="' + cx + '" cy="' + cy + '" r="' + R + '" fill="none" stroke="' + FIG_INK + '" stroke-width="1.3"/>';
+  out += '<line x1="' + (cx - R - 12) + '" y1="' + cy + '" x2="' + (cx + R + 12) + '" y2="' + cy + '" stroke="' + FIG_INK + '" stroke-width="1"/>';
+  out += '<line x1="' + cx + '" y1="' + (cy - R - 12) + '" x2="' + cx + '" y2="' + (cy + R + 12) + '" stroke="' + FIG_INK + '" stroke-width="1"/>';
+  out += '<path d="M ' + (cx + 38) + ' ' + cy + ' A 38 38 0 ' + large + ' ' + sweep + ' ' + fmt(ax, 1) + ' ' + fmt(ay, 1) + '" fill="none" stroke="' + FIG_ACC + '" stroke-width="2"/>';
+  out += '<line x1="' + cx + '" y1="' + cy + '" x2="' + fmt(ex, 1) + '" y2="' + fmt(ey, 1) + '" stroke="' + FIG_INK + '" stroke-width="2.2"/>';
+  out += '<circle cx="' + fmt(ex, 1) + '" cy="' + fmt(ey, 1) + '" r="3.2" fill="' + FIG_ALT + '"/>';
+  return out + '</svg>';
+}
+
+function u1ptSVG(x, y) { /* axes with the terminal arm to the point P(x, y) and dashed coordinate drops */
+  var r = Math.sqrt(x * x + y * y), cx = 88, cy = 88, R = 64;
+  var px = cx + R * x / r, py = cy - R * y / r;
+  var out = '<svg viewBox="0 0 176 176" width="176" height="176" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Point on a terminal arm">';
+  out += '<line x1="8" y1="' + cy + '" x2="168" y2="' + cy + '" stroke="' + FIG_INK + '" stroke-width="1"/>';
+  out += '<line x1="' + cx + '" y1="8" x2="' + cx + '" y2="168" stroke="' + FIG_INK + '" stroke-width="1"/>';
+  out += '<line x1="' + fmt(px, 1) + '" y1="' + fmt(py, 1) + '" x2="' + fmt(px, 1) + '" y2="' + cy + '" stroke="' + FIG_INK + '" stroke-width="0.8" stroke-dasharray="3 3"/>';
+  out += '<line x1="' + fmt(px, 1) + '" y1="' + fmt(py, 1) + '" x2="' + cx + '" y2="' + fmt(py, 1) + '" stroke="' + FIG_INK + '" stroke-width="0.8" stroke-dasharray="3 3"/>';
+  out += '<line x1="' + cx + '" y1="' + cy + '" x2="' + fmt(px, 1) + '" y2="' + fmt(py, 1) + '" stroke="' + FIG_INK + '" stroke-width="2.2"/>';
+  out += '<circle cx="' + fmt(px, 1) + '" cy="' + fmt(py, 1) + '" r="3.2" fill="' + FIG_ALT + '"/>';
+  out += _txt(px + (x >= 0 ? 8 : -8), py - 10, "P(" + x + ", " + y + ")", 12, true, x >= 0 ? "start" : "end");
+  return out + '</svg>';
+}
+
+/* ---- 7.1: match a described situation to the labels of its diagram ---- */
+E("u1-diagram-choice", 1, ["7.1"], 1, "gen", function () {
+  var ctxs = [
+    { name: "surveyor", open: "A surveyor is mapping a triangular plot of land with corners " },
+    { name: "gardener", open: "A gardener is laying out a triangular garden bed with corners " },
+    { name: "engineer", open: "An engineer is sketching a triangular brace with corners " },
+    { name: "hiker", open: "A hiker is plotting three landmarks, " }
+  ];
+  var ctx = pick(ctxs);
+  var L = pick([["P", "Q", "R"], ["A", "B", "C"], ["X", "Y", "Z"], ["D", "E", "F"]]);
+  var len = pick([24, 30, 36, 45, 52, 68, 85, 120]);
+  var A = ri(38, 78), B = ri(35, 145 - A);
+  while (B === A) B = ri(35, 145 - A);
+  var side = L[0] + L[1], side2 = L[1] + L[2], side3 = L[2] + L[0];
+  function opt(s, a1, a2) { return s + " = " + len + ", angle " + L[0] + " = " + a1 + "°, angle " + L[1] + " = " + a2 + "°"; }
+  var corr = opt(side, A, B);
+  var dis = [opt(side2, A, B), opt(side3, A, B), opt(side, B, A)];
+  return mcq(ctx.open + L[0] + ", " + L[1] + " and " + L[2] + ". The distance between " + L[0] + " and " + L[1] + " is " + len + " m. The angle at " + L[0] + " is " + A + "° and the angle at " + L[1] + " is " + B + "°. Which set of labels belongs on a diagram of this situation?",
+    corr, dis,
+    "The measured distance joins vertices " + L[0] + " and " + L[1] + ", so the side " + side + " carries the label " + len + ". The two given angles sit at the ends of that side: angle " + L[0] + " is " + A + "° and angle " + L[1] + " is " + B + "°. The matching labels are <b>" + corr + "</b>.",
+    { ctx: ctx.name, len: len, A: A, B: B });
+});
+
+/* ---- 7.8: quadrant of an angle in standard position ---- */
+E("u1-quadrant", 1, ["7.8"], 1, "gen", function () {
+  var deg = ri(3, 357);
+  while (deg % 90 < 3 || deg % 90 > 87) deg = ri(3, 357);
+  var q = u1quadOf(deg), names = ["Quadrant I", "Quadrant II", "Quadrant III", "Quadrant IV"];
+  var corr = names[q - 1];
+  var dis = names.filter(function (n) { return n !== corr; });
+  var lo = (q - 1) * 90, hi = q * 90;
+  return mcq("An angle of " + deg + "° is drawn in standard position. In which quadrant does its terminal arm lie?",
+    corr, dis,
+    "Standard position angles are measured counterclockwise from the positive x-axis. Since \\(" + lo + "^\\circ < " + deg + "^\\circ < " + hi + "^\\circ\\), the terminal arm of the " + deg + "° angle lies in <b>" + corr + "</b>.",
+    { deg: deg });
+});
+
+/* ---- 7.9: reference angle ---- */
+E("u1-reference-angle", 1, ["7.9"], 1, "gen", function () {
+  var deg = ri(5, 355);
+  while (deg % 90 === 0) deg = ri(5, 355);
+  var ref = u1refOf(deg), q = u1quadOf(deg);
+  var step = q === 1 ? deg + "^\\circ" : q === 2 ? "180^\\circ - " + deg + "^\\circ" : q === 3 ? deg + "^\\circ - 180^\\circ" : "360^\\circ - " + deg + "^\\circ";
+  return numq("Determine the reference angle for an angle of " + deg + "° in standard position. Give the answer in degrees.",
+    ref, 0.5,
+    "The reference angle is the acute angle between the terminal arm and the x-axis. The angle " + deg + "° terminates in Quadrant " + ["I", "II", "III", "IV"][q - 1] + ": \\[ \\begin{aligned} \\text{reference angle} &= " + step + " \\\\ &= " + ref + "^\\circ \\end{aligned} \\] The reference angle is <b>" + ref + "°</b>.",
+    { deg: deg });
+});
+
+/* ---- 7.7: read the measure of a sketched standard-position angle ---- */
+E("u1-read-sketch", 1, ["7.7"], 1, "gen", function () {
+  var pool = [];
+  for (var d = 20; d <= 340; d += 5) if (d % 90 !== 0) pool.push(d);
+  var deg = pick(pool);
+  var corr = deg + "°";
+  var cands = [360 - deg, (deg + 180) % 360, (540 - deg) % 360, (deg + 90) % 360, (deg + 270) % 360, (180 - deg + 360) % 360].map(function (x) { return x + "°"; });
+  var q = mcq("The diagram shows an angle in standard position. What is the measure of the angle?",
+    corr, u1dist3(corr, cands),
+    "The initial arm lies on the positive x-axis and the rotation is counterclockwise. The terminal arm is in Quadrant " + ["I", "II", "III", "IV"][u1quadOf(deg) - 1] + " with reference angle " + u1refOf(deg) + "°, which gives the measure <b>" + deg + "°</b>.",
+    { deg: deg });
+  q.figure = u1armSVG(deg);
+  return q;
+});
+
+/* ---- 7.4: sine law, find a side or an angle ---- */
+E("u1-sine-law", 1, ["7.4"], 2, "gen", function () {
+  if (Math.random() < 0.5) {
+    var A = ri(25, 80), B = ri(25, 155 - A), C = 180 - A - B;
+    var a = ri(6, 38);
+    var b = a * Math.sin(B * Math.PI / 180) / Math.sin(A * Math.PI / 180);
+    var q1 = numq("In triangle ABC, angle A is " + A + "°, angle B is " + B + "°, and side a is " + a + " cm. Determine the length of side b, to the nearest tenth of a centimetre.",
+      b, 0.06,
+      "Side a is opposite angle A and side b is opposite angle B, so the sine law gives: \\[ \\begin{aligned} \\frac{b}{\\sin B} &= \\frac{a}{\\sin A} \\\\ b &= \\frac{a \\sin B}{\\sin A} \\\\ &= \\frac{" + a + " \\sin " + B + "^\\circ}{\\sin " + A + "^\\circ} \\\\ &\\approx " + fmt(b, 1) + " \\end{aligned} \\] The length of side b is <b>" + fmt(b, 1) + " cm</b>.",
+      { mode: "side", A: A, B: B, a: a });
+    q1.figure = triAngSVG(A, B, C, { L: ["A", "B", "C"], ang: [A + "°", B + "°", ""], side: ["" + a, "?", ""] });
+    return q1;
+  }
+  var A2 = ri(25, 60), Bt = ri(A2 + 8, 85), b2 = ri(12, 30);
+  var aRaw = b2 * Math.sin(A2 * Math.PI / 180) / Math.sin(Bt * Math.PI / 180);
+  var a2 = Math.ceil(aRaw * 10) / 10; /* round UP so the printed side a keeps sin B below 1 */
+  var Bans = Math.asin(Math.min(1, b2 * Math.sin(A2 * Math.PI / 180) / a2)) * 180 / Math.PI;
+  var q2 = numq("In triangle ABC, angle A is " + A2 + "°, side a is " + fmt(a2, 1) + " cm, and side b is " + b2 + " cm. Angle B is acute. Determine the measure of angle B, to the nearest degree.",
+    Bans, 0.6,
+    "Side a is opposite angle A and side b is opposite angle B, so the sine law gives: \\[ \\begin{aligned} \\frac{\\sin B}{b} &= \\frac{\\sin A}{a} \\\\ \\sin B &= \\frac{b \\sin A}{a} \\\\ &= \\frac{" + b2 + " \\sin " + A2 + "^\\circ}{" + fmt(a2, 1) + "} \\\\ &\\approx " + fmt(Math.sin(Bans * Math.PI / 180)) + " \\\\ B &\\approx " + Math.round(Bans) + "^\\circ \\end{aligned} \\] The measure of angle B is <b>" + Math.round(Bans) + "°</b>.",
+    { mode: "angle", A: A2, a: a2, b: b2 });
+  q2.figure = triAngSVG(A2, Bt, 180 - A2 - Bt, { L: ["A", "B", "C"], ang: [A2 + "°", "?", ""], side: ["" + fmt(a2, 1), "" + b2, ""] });
+  return q2;
+});
+
+/* ---- 7.6: cosine law, find a side or an angle ---- */
+E("u1-cosine-law", 1, ["7.6"], 2, "gen", function () {
+  if (Math.random() < 0.5) {
+    var A = ri(35, 140), b = ri(7, 30), c = ri(7, 30);
+    var a = Math.sqrt(b * b + c * c - 2 * b * c * Math.cos(A * Math.PI / 180));
+    var B = Math.acos((a * a + c * c - b * b) / (2 * a * c)) * 180 / Math.PI;
+    var C = 180 - A - B;
+    var q1 = numq("In triangle ABC, side b is " + b + " cm, side c is " + c + " cm, and the included angle A is " + A + "°. Determine the length of side a, to the nearest tenth of a centimetre.",
+      a, 0.06,
+      "Side a is opposite the included angle A, so the cosine law gives: \\[ \\begin{aligned} a^2 &= b^2 + c^2 - 2bc \\cos A \\\\ &= " + b + "^2 + " + c + "^2 - 2(" + b + ")(" + c + ") \\cos " + A + "^\\circ \\\\ &\\approx " + fmt(a * a, 1) + " \\\\ a &\\approx " + fmt(a, 1) + " \\end{aligned} \\] The length of side a is <b>" + fmt(a, 1) + " cm</b>.",
+      { mode: "side", A: A, b: b, c: c });
+    q1.figure = triAngSVG(A, B, C, { L: ["A", "B", "C"], ang: [A + "°", "", ""], side: ["?", "" + b, "" + c] });
+    return q1;
+  }
+  var a2 = ri(9, 30), b2 = ri(9, 30), c2 = ri(9, 30), tries = 0;
+  while ((a2 + b2 <= c2 + 2 || b2 + c2 <= a2 + 2 || c2 + a2 <= b2 + 2) && tries < 60) { a2 = ri(9, 30); b2 = ri(9, 30); c2 = ri(9, 30); tries++; }
+  var cosA = (b2 * b2 + c2 * c2 - a2 * a2) / (2 * b2 * c2);
+  var Aans = Math.acos(Math.max(-1, Math.min(1, cosA))) * 180 / Math.PI;
+  var q2 = numq("In triangle ABC, side a is " + a2 + " cm, side b is " + b2 + " cm, and side c is " + c2 + " cm. Determine the measure of angle A, to the nearest degree.",
+    Aans, 0.6,
+    "The cosine law, rearranged for angle A, gives: \\[ \\begin{aligned} \\cos A &= \\frac{b^2 + c^2 - a^2}{2bc} \\\\ &= \\frac{" + b2 + "^2 + " + c2 + "^2 - " + a2 + "^2}{2(" + b2 + ")(" + c2 + ")} \\\\ &\\approx " + fmt(cosA) + " \\\\ A &\\approx " + Math.round(Aans) + "^\\circ \\end{aligned} \\] The measure of angle A is <b>" + Math.round(Aans) + "°</b>.",
+    { mode: "angle", a: a2, b: b2, c: c2 });
+  q2.figure = triSVG(a2, b2, c2, { L: ["A", "B", "C"], side: ["" + a2, "" + b2, "" + c2] });
+  return q2;
+});
+
+/* ---- 7.2, 7.22: contextual distance problems (cosine law and sine law settings) ---- */
+E("u1-context-distance", 1, ["7.2", "7.22"], 2, "gen", function () {
+  if (Math.random() < 0.5) {
+    var ctxs = [
+      { name: "roads", dmin: 12, dmax: 58, text: function (ang, d1, d2) { return "Two straight roads leave town P, one running to town Q and one to town R. The angle between the two roads is " + ang + "°. Town Q is " + d1 + " km from P and town R is " + d2 + " km from P. How far apart are towns Q and R, to the nearest tenth of a kilometre?"; } },
+      { name: "boats", dmin: 6, dmax: 40, text: function (ang, d1, d2) { return "Two boats leave a marina at the same time and travel in straight lines. The angle between their paths is " + ang + "°. After some time, one boat has travelled " + d1 + " km and the other has travelled " + d2 + " km. How far apart are the two boats, to the nearest tenth of a kilometre?"; } },
+      { name: "hikers", dmin: 3, dmax: 15, text: function (ang, d1, d2) { return "Two hikers leave a trailhead and walk in straight lines. The angle between their routes is " + ang + "°. One hiker walks " + d1 + " km and the other walks " + d2 + " km. How far apart are the two hikers, to the nearest tenth of a kilometre?"; } }
+    ];
+    var ctx = pick(ctxs);
+    var ang = ri(40, 145), d1 = ri(ctx.dmin, ctx.dmax), d2 = ri(ctx.dmin, ctx.dmax);
+    var dist = Math.sqrt(d1 * d1 + d2 * d2 - 2 * d1 * d2 * Math.cos(ang * Math.PI / 180));
+    return numq(ctx.text(ang, d1, d2),
+      dist, 0.06,
+      "The two distances from the starting point and the distance between the endpoints form a triangle, with the given angle included between the known sides. The cosine law gives: \\[ \\begin{aligned} d^2 &= " + d1 + "^2 + " + d2 + "^2 - 2(" + d1 + ")(" + d2 + ") \\cos " + ang + "^\\circ \\\\ &\\approx " + fmt(dist * dist, 1) + " \\\\ d &\\approx " + fmt(dist, 1) + " \\end{aligned} \\] The distance is <b>" + fmt(dist, 1) + " km</b>.",
+      { ctx: ctx.name, ang: ang, d1: d1, d2: d2, law: "cosine" });
+  }
+  var ctxs2 = [
+    { name: "lighthouse", bmin: 60, bmax: 300, text: function (base, A, B) { return "A lighthouse stands offshore. From point A on a straight shoreline, the angle between the shoreline and the line of sight to the lighthouse is " + A + "°. Point B is " + base + " m from A along the shoreline, and from B the angle between the shoreline and the line of sight to the lighthouse is " + B + "°. Determine the distance from A to the lighthouse, to the nearest metre."; } },
+    { name: "tower", bmin: 40, bmax: 180, text: function (base, A, B) { return "A water tower stands on the far side of a river. From point A on the near bank, the angle between the bank and the line of sight to the tower is " + A + "°. Point B is " + base + " m from A along the bank, and from B the angle between the bank and the line of sight to the tower is " + B + "°. Determine the distance from A to the tower, to the nearest metre."; } }
+  ];
+  var ctx2 = pick(ctxs2);
+  var base = ri(ctx2.bmin, ctx2.bmax), A = ri(38, 78), B = ri(38, 155 - A), L = 180 - A - B;
+  var dist2 = base * Math.sin(B * Math.PI / 180) / Math.sin(L * Math.PI / 180);
+  return numq(ctx2.text(base, A, B),
+    dist2, 0.6,
+    "The two sight lines and the shoreline form a triangle. The angle at the lighthouse is \\(180^\\circ - " + A + "^\\circ - " + B + "^\\circ = " + L + "^\\circ\\). The distance from A is opposite the " + B + "° angle, so the sine law gives: \\[ \\begin{aligned} \\frac{d}{\\sin " + B + "^\\circ} &= \\frac{" + base + "}{\\sin " + L + "^\\circ} \\\\ d &= \\frac{" + base + " \\sin " + B + "^\\circ}{\\sin " + L + "^\\circ} \\\\ &\\approx " + Math.round(dist2) + " \\end{aligned} \\] The distance is <b>" + Math.round(dist2) + " m</b>.",
+    { ctx: ctx2.name, base: base, A: A, B: B, law: "sine" });
+});
+
+/* ---- 7.10, 7.11: angles sharing a reference angle; reflections ---- */
+E("u1-same-reference", 1, ["7.10", "7.11"], 2, "gen", function () {
+  if (Math.random() < 0.5) {
+    var r = pick([15, 20, 25, 30, 35, 40, 50, 55, 60, 65, 70, 75, 80]);
+    function setStr(arr) { return arr.join("°, ") + "°"; }
+    var corrArr = [r, 180 - r, 180 + r, 360 - r];
+    var corr = setStr(corrArr);
+    var cands = [
+      setStr([r, 90 + r, 180 + r, 360 - r]),
+      setStr([r, 180 - r, 270 + r, 360 - r]),
+      setStr([r, 180 - r, 180 + r, 270 - r]),
+      setStr([90 - r, 180 - r, 180 + r, 360 - r])
+    ];
+    return mcq("Which list gives all the angles between 0° and 360° that have a reference angle of " + r + "°?",
+      corr, u1dist3(corr, cands),
+      "An angle with reference angle " + r + "° can terminate in any quadrant. In Quadrant I the angle is " + r + "°; reflecting the terminal arm into Quadrant II gives \\(180^\\circ - " + r + "^\\circ = " + (180 - r) + "^\\circ\\); into Quadrant III gives \\(180^\\circ + " + r + "^\\circ = " + (180 + r) + "^\\circ\\); into Quadrant IV gives \\(360^\\circ - " + r + "^\\circ = " + (360 - r) + "^\\circ\\). The list is <b>" + corr + "</b>.",
+      { mode: "sets", r: r });
+  }
+  var q = pick([2, 3, 4]);
+  var deg = q === 2 ? ri(100, 170) : q === 3 ? ri(190, 260) : ri(280, 350);
+  var ref = u1refOf(deg);
+  var opts = ["the x-axis only", "the y-axis only", "both axes", "the line y = x"];
+  var corr = q === 2 ? opts[1] : q === 3 ? opts[2] : opts[0];
+  var dis = opts.filter(function (o) { return o !== corr; });
+  var how = q === 2 ? "Quadrant II is reached by reflecting the reference arm in the y-axis." : q === 3 ? "Quadrant III is reached by reflecting the reference arm in both axes." : "Quadrant IV is reached by reflecting the reference arm in the x-axis.";
+  return mcq("An angle of " + deg + "° has a reference angle of " + ref + "°. The terminal arm of the " + deg + "° angle is the reflection of the terminal arm of its reference angle in",
+    corr, dis,
+    "The angle " + deg + "° terminates in Quadrant " + ["I", "II", "III", "IV"][q - 1] + ". " + how + " The reflection is in <b>" + corr + "</b>.",
+    { mode: "reflect", deg: deg });
+});
+
+/* ---- 7.14: distance from the origin to a point on the terminal arm ---- */
+E("u1-point-distance", 1, ["7.14"], 2, "gen", function () {
+  var bases = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29], [9, 40, 41]];
+  var bs = pick(bases), s = ri(1, 3);
+  var lx = bs[0] * s, ly = bs[1] * s, r = bs[2] * s;
+  if (Math.random() < 0.5) { var t = lx; lx = ly; ly = t; }
+  var x = lx * pick([1, -1]), y = ly * pick([1, -1]);
+  return numq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle in standard position. Determine the distance from the origin to point P.",
+    r, 0.1,
+    "The distance from the origin to P is the hypotenuse of a right triangle with legs \\(|" + x + "|\\) and \\(|" + y + "|\\). The Pythagorean theorem gives: \\[ \\begin{aligned} r^2 &= (" + x + ")^2 + (" + y + ")^2 \\\\ &= " + (x * x) + " + " + (y * y) + " \\\\ &= " + (r * r) + " \\\\ r &= " + r + " \\end{aligned} \\] The distance is <b>" + r + "</b>.",
+    { x: x, y: y });
+});
+
+/* ---- 7.15: a trigonometric ratio from a point on the terminal arm ---- */
+E("u1-point-ratios", 1, ["7.15"], 2, "gen", function () {
+  var bases = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29]];
+  var bs = pick(bases);
+  var lx = bs[0], ly = bs[1], r = bs[2];
+  if (Math.random() < 0.5) { var t = lx; lx = ly; ly = t; }
+  var x = lx * pick([1, -1]), y = ly * pick([1, -1]);
+  var kind = pick(["sin", "cos", "tan"]);
+  var num = kind === "sin" ? y : kind === "cos" ? x : y;
+  var den = kind === "sin" ? r : kind === "cos" ? r : x;
+  var corr = "\\(" + u1fr(num, den) + "\\)";
+  var candBodies = [u1fr(x, r), u1fr(y, r), u1fr(y, x), u1fr(x, y), u1fr(-y, r), u1fr(-x, r), u1fr(-y, x), u1fr(r, y), u1fr(r, x)];
+  var dis = u1dist3(u1fr(num, den), candBodies).map(function (s) { return "\\(" + s + "\\)"; });
+  var defn = kind === "sin" ? "\\sin\\theta = \\frac{y}{r}" : kind === "cos" ? "\\cos\\theta = \\frac{x}{r}" : "\\tan\\theta = \\frac{y}{x}";
+  return mcq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle \\(\\theta\\) in standard position. What is the exact value of \\(" + kind + " \\theta\\)?",
+    corr, dis,
+    "First find the distance from the origin: \\(r = \\sqrt{(" + x + ")^2 + (" + y + ")^2} = " + r + "\\). Using \\(" + defn + "\\): \\[ \\begin{aligned} \\" + kind + " \\theta &= " + corr.slice(2, -2) + " \\end{aligned} \\] The exact value is <b>" + corr + "</b>.",
+    { x: x, y: y, kind: kind });
+});
+
+/* ---- 7.12, 7.17: read an angle from its sketched terminal-arm point ---- */
+E("u1-point-angle", 1, ["7.12", "7.17"], 2, "gen", function () {
+  var x = ri(2, 9) * pick([1, -1]), y = ri(2, 9) * pick([1, -1]);
+  var theta = Math.atan2(y, x) * 180 / Math.PI;
+  if (theta < 0) theta += 360;
+  var refA = Math.atan(Math.abs(y / x)) * 180 / Math.PI;
+  var q = u1quadOf(Math.round(theta));
+  var adjust = q === 1 ? "the angle is the reference angle itself" : q === 2 ? "\\(\\theta = 180^\\circ - " + fmt(refA, 1) + "^\\circ\\)" : q === 3 ? "\\(\\theta = 180^\\circ + " + fmt(refA, 1) + "^\\circ\\)" : "\\(\\theta = 360^\\circ - " + fmt(refA, 1) + "^\\circ\\)";
+  var qq = numq("The diagram shows the point P(" + x + ", " + y + ") on the terminal arm of an angle \\(\\theta\\) in standard position. Determine the measure of \\(\\theta\\), to the nearest degree.",
+    theta, 0.6,
+    "The reference angle satisfies \\(\\tan\\theta' = \\left|\\frac{" + y + "}{" + x + "}\\right|\\), so \\(\\theta' \\approx " + fmt(refA, 1) + "^\\circ\\). The point is in Quadrant " + ["I", "II", "III", "IV"][q - 1] + ", so " + adjust + ". To the nearest degree, \\(\\theta\\) is <b>" + Math.round(theta) + "°</b>.",
+    { x: x, y: y });
+  qq.figure = u1ptSVG(x, y);
+  return qq;
+});
+
+/* ---- 7.18: ratio values at axis angles, from a point on the terminal arm ---- */
+E("u1-axis-ratios", 1, ["7.18"], 2, "gen", function () {
+  var dirs = [
+    { deg: 0, dx: 1, dy: 0 }, { deg: 90, dx: 0, dy: 1 }, { deg: 180, dx: -1, dy: 0 },
+    { deg: 270, dx: 0, dy: -1 }, { deg: 360, dx: 1, dy: 0 }
+  ];
+  var d = pick(dirs), m = ri(2, 9);
+  var x = d.dx * m, y = d.dy * m;
+  var kind = pick(["sin", "cos", "tan"]);
+  var corr, why;
+  if (kind === "sin") { corr = "" + d.dy; why = "\\sin\\theta = \\frac{y}{r} = \\frac{" + y + "}{" + m + "}"; }
+  else if (kind === "cos") { corr = "" + d.dx; why = "\\cos\\theta = \\frac{x}{r} = \\frac{" + x + "}{" + m + "}"; }
+  else if (d.dx === 0) { corr = "undefined"; why = "\\tan\\theta = \\frac{y}{x} = \\frac{" + y + "}{0}"; }
+  else { corr = "0"; why = "\\tan\\theta = \\frac{y}{x} = \\frac{" + y + "}{" + x + "}"; }
+  var all = ["-1", "0", "1", "undefined"];
+  var dis = all.filter(function (s) { return s !== corr; });
+  var sol = "The point is on the terminal arm of the " + d.deg + "° angle, and \\(r = " + m + "\\). Using the definition, \\(" + why + "\\)." + (corr === "undefined" ? " Division by zero is undefined." : "") + " The exact value of \\(" + kind + " " + d.deg + "^\\circ\\) is <b>" + corr + "</b>.";
+  return mcq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle \\(\\theta\\) in standard position. Without using technology, determine the exact value of \\(" + kind + "\\theta\\).",
+    corr, dis, sol,
+    { deg: d.deg, kind: kind, m: m });
+});
+
+/* ---- 7.19: solve sin/cos/tan equations on 0 to 360 degrees ---- */
+E("u1-solve-equation", 1, ["7.19"], 2, "gen", function () {
+  function pairFmt(p) { return "\\(\\theta = " + p[0] + "^\\circ\\) or \\(\\theta = " + p[1] + "^\\circ\\)"; }
+  function pairFor(ratio, ref, sign) {
+    if (ratio === "sin") { if (ref === 0) return [0, 180]; return sign > 0 ? [ref, 180 - ref] : [180 + ref, 360 - ref]; }
+    if (ratio === "cos") { if (ref === 0) return [90, 270]; return sign > 0 ? [ref, 360 - ref] : [180 - ref, 180 + ref]; }
+    if (ref === 0) return [0, 180];
+    return sign > 0 ? [ref, 180 + ref] : [180 - ref, 360 - ref];
+  }
+  function validPair(p) { return p[0] !== p[1] && p[0] >= 0 && p[0] < 360 && p[1] >= 0 && p[1] < 360; }
+  function samePair(p, q) { return (p[0] === q[0] && p[1] === q[1]) || (p[0] === q[1] && p[1] === q[0]); }
+  function distPairs(corrP, candPs) {
+    var out = [];
+    for (var i = 0; i < candPs.length; i++) {
+      var p = candPs[i];
+      if (!validPair(p) || samePair(p, corrP)) continue;
+      var s = pairFmt(p);
+      if (out.indexOf(s) < 0) out.push(s);
+      if (out.length === 3) break;
+    }
+    return out;
+  }
+  if (Math.random() < 0.55) {
+    var table = [
+      { ratio: "sin", a: "\\frac{1}{2}", ref: 30, sign: 1 }, { ratio: "sin", a: "\\frac{\\sqrt{2}}{2}", ref: 45, sign: 1 },
+      { ratio: "sin", a: "\\frac{\\sqrt{3}}{2}", ref: 60, sign: 1 }, { ratio: "sin", a: "-\\frac{1}{2}", ref: 30, sign: -1 },
+      { ratio: "sin", a: "-\\frac{\\sqrt{2}}{2}", ref: 45, sign: -1 }, { ratio: "sin", a: "-\\frac{\\sqrt{3}}{2}", ref: 60, sign: -1 },
+      { ratio: "sin", a: "0", ref: 0, sign: 1 },
+      { ratio: "cos", a: "\\frac{1}{2}", ref: 60, sign: 1 }, { ratio: "cos", a: "\\frac{\\sqrt{2}}{2}", ref: 45, sign: 1 },
+      { ratio: "cos", a: "\\frac{\\sqrt{3}}{2}", ref: 30, sign: 1 }, { ratio: "cos", a: "-\\frac{1}{2}", ref: 60, sign: -1 },
+      { ratio: "cos", a: "-\\frac{\\sqrt{2}}{2}", ref: 45, sign: -1 }, { ratio: "cos", a: "-\\frac{\\sqrt{3}}{2}", ref: 30, sign: -1 },
+      { ratio: "cos", a: "0", ref: 0, sign: 1 },
+      { ratio: "tan", a: "1", ref: 45, sign: 1 }, { ratio: "tan", a: "\\sqrt{3}", ref: 60, sign: 1 },
+      { ratio: "tan", a: "\\frac{\\sqrt{3}}{3}", ref: 30, sign: 1 }, { ratio: "tan", a: "-1", ref: 45, sign: -1 },
+      { ratio: "tan", a: "-\\sqrt{3}", ref: 60, sign: -1 }, { ratio: "tan", a: "-\\frac{\\sqrt{3}}{3}", ref: 30, sign: -1 },
+      { ratio: "tan", a: "0", ref: 0, sign: 1 }
+    ];
+    var e = pick(table);
+    var corrP = pairFor(e.ratio, e.ref, e.sign);
+    var others = e.ratio === "sin" ? ["cos", "tan"] : e.ratio === "cos" ? ["sin", "tan"] : ["sin", "cos"];
+    var candPs = [
+      pairFor(e.ratio, e.ref, -e.sign),
+      pairFor(e.ratio, 90 - e.ref, e.sign),
+      pairFor(others[0], e.ref, e.sign),
+      pairFor(others[1], e.ref, e.sign),
+      pairFor(e.ratio, e.ref === 30 ? 60 : 30, e.sign),
+      pairFor(e.ratio, e.ref === 45 ? 30 : 45, e.sign)
+    ];
+    var corr = pairFmt(corrP);
+    return mcq("Solve \\(" + e.ratio + " \\theta = " + e.a + "\\) for \\(0^\\circ \\le \\theta < 360^\\circ\\).",
+      corr, distPairs(corrP, candPs),
+      "The reference angle is " + e.ref + "°, since \\(" + e.ratio + " " + e.ref + "^\\circ = " + (e.a === "0" ? "0" : e.a.replace("-", "")) + "\\). The ratio \\(" + e.ratio + "\\) is " + (e.sign > 0 ? "positive" : "negative") + " in the quadrants that give the solutions \\(\\theta = " + corrP[0] + "^\\circ\\) and \\(\\theta = " + corrP[1] + "^\\circ\\). The solutions are <b>" + corr + "</b>.",
+      { mode: "exact", ratio: e.ratio, ref: e.ref, sign: e.sign });
+  }
+  var ratio = pick(["sin", "cos"]);
+  var av = ri(15, 95) / 100, sign = pick([1, -1]);
+  var ref = Math.round((ratio === "sin" ? Math.asin(av) : Math.acos(av)) * 180 / Math.PI);
+  var corrP2 = pairFor(ratio, ref, sign);
+  var candPs2 = [
+    pairFor(ratio, ref, -sign),
+    pairFor(ratio, 90 - ref, sign),
+    pairFor(ratio === "sin" ? "cos" : "sin", ref, sign),
+    pairFor(ratio, Math.max(5, ref - 15), sign),
+    pairFor(ratio, Math.min(85, ref + 15), sign)
+  ];
+  var corr2 = pairFmt(corrP2);
+  var aStr = (sign < 0 ? "-" : "") + fmt(av);
+  return mcq("Solve \\(" + ratio + " \\theta = " + aStr + "\\) for \\(0^\\circ \\le \\theta < 360^\\circ\\), to the nearest degree.",
+    corr2, distPairs(corrP2, candPs2),
+    "The reference angle is \\(" + ratio + "^{-1}(" + fmt(av) + ") \\approx " + ref + "^\\circ\\). The ratio \\(" + ratio + "\\) is " + (sign > 0 ? "positive" : "negative") + " in the quadrants that give the solutions \\(\\theta = " + corrP2[0] + "^\\circ\\) and \\(\\theta = " + corrP2[1] + "^\\circ\\). The solutions are <b>" + corr2 + "</b>.",
+    { mode: "dec", ratio: ratio, a: aStr });
+});
+
+/* ---- 7.20: exact values at angles with reference angle 30, 45 or 60 ---- */
+E("u1-exact-values", 1, ["7.20"], 2, "gen", function () {
+  var degs = [120, 135, 150, 210, 225, 240, 300, 315, 330, 30, 45, 60];
+  var deg = pick(degs), kind = pick(["sin", "cos", "tan"]);
+  var pres = pick([deg, deg, deg + 360, deg - 360]);
+  var ex = u1exact(kind, deg);
+  var ref = u1refOf(deg);
+  var corr = "\\(" + ex.s + "\\)";
+  var others = ["sin", "cos", "tan"].filter(function (k) { return k !== kind; });
+  var candBodies = [];
+  var e1 = u1exact(kind, ref); if (e1) candBodies.push(e1.s);
+  var e2 = u1exact(others[0], deg); if (e2) candBodies.push(e2.s);
+  var e3 = u1exact(others[1], deg); if (e3) candBodies.push(e3.s);
+  var e4 = u1exact(kind, (deg + 180) % 360); if (e4) candBodies.push(e4.s);
+  var e5 = u1exact(kind, (360 - deg) % 360); if (e5) candBodies.push(e5.s);
+  candBodies.push(ex.s.charAt(0) === "-" ? ex.s.slice(1) : "-" + ex.s);
+  candBodies = candBodies.concat(["\\frac{1}{2}", "-\\frac{1}{2}", "\\frac{\\sqrt{2}}{2}", "-\\frac{\\sqrt{2}}{2}", "\\frac{\\sqrt{3}}{2}", "-\\frac{\\sqrt{3}}{2}", "\\frac{\\sqrt{3}}{3}", "-\\frac{\\sqrt{3}}{3}", "\\sqrt{3}", "-\\sqrt{3}", "1", "-1", "0"]);
+  var dis = u1dist3(ex.s, candBodies).map(function (s) { return "\\(" + s + "\\)"; });
+  var q = u1quadOf(deg);
+  var cotNote = pres === deg ? "" : "The angle " + pres + "° is coterminal with " + deg + "°, so it has the same ratio values. ";
+  return mcq("Determine the exact value of \\(" + kind + " " + pres + "^\\circ\\).",
+    corr, dis,
+    cotNote + "The reference angle for " + deg + "° is " + ref + "°, and the angle terminates in Quadrant " + ["I", "II", "III", "IV"][q - 1] + ", where \\(" + kind + "\\) is " + (ex.v < 0 ? "negative" : "positive") + ". Since \\(" + kind + " " + ref + "^\\circ = " + (u1exact(kind, ref) || {}).s + "\\), the value is \\[ \\begin{aligned} " + kind + " " + deg + "^\\circ &= " + ex.s + " \\end{aligned} \\] The exact value is <b>" + corr + "</b>.",
+    { deg: deg, pres: pres, kind: kind });
+});
+
+/* ---- 7.16: which sign statement is true for a given angle ---- */
+E("u1-sign-statements", 1, ["7.16"], 2, "gen", function () {
+  var q = pick([1, 2, 3, 4]);
+  var deg = q === 1 ? ri(8, 82) : q === 2 ? ri(98, 172) : q === 3 ? ri(188, 262) : ri(278, 352);
+  var stmts = [
+    "\\(\\sin\\theta\\) and \\(\\cos\\theta\\) are both positive",
+    "\\(\\sin\\theta\\) is positive and \\(\\cos\\theta\\) is negative",
+    "\\(\\sin\\theta\\) and \\(\\cos\\theta\\) are both negative",
+    "\\(\\sin\\theta\\) is negative and \\(\\cos\\theta\\) is positive"
+  ];
+  var corr = stmts[q - 1];
+  var dis = stmts.filter(function (s) { return s !== corr; });
+  var signs = q === 1 ? "both x and y are positive on the terminal arm, so sine and cosine are both positive"
+    : q === 2 ? "x is negative and y is positive on the terminal arm, so sine is positive and cosine is negative"
+    : q === 3 ? "both x and y are negative on the terminal arm, so sine and cosine are both negative"
+    : "x is positive and y is negative on the terminal arm, so sine is negative and cosine is positive";
+  return mcq("For \\(\\theta = " + deg + "^\\circ\\), which statement is true?",
+    corr, dis,
+    "The angle " + deg + "° terminates in Quadrant " + ["I", "II", "III", "IV"][q - 1] + ", where " + signs + ". The true statement is <b>" + corr + "</b>.",
+    { deg: deg });
+});
+
+/* ---- 7.5: the ambiguous case, how many triangles ---- */
+E("u1-ambiguous-case", 1, ["7.5"], 3, "gen", function () {
+  var opts = ["No triangle can be drawn", "One triangle can be drawn", "Two triangles can be drawn", "It cannot be determined"];
+  var mode = pick(["two", "zero", "oneRight", "oneLong", "obtOne", "obtZero"]);
+  var A, b, a, key, expl;
+  if (mode === "two" || mode === "zero") {
+    A = pick([35, 42, 48, 55, 62]); b = pick([12, 14, 15, 16, 18, 20]);
+    var h = b * Math.sin(A * Math.PI / 180);
+    a = mode === "two" ? Math.round((h + b) / 2 * 10) / 10 : Math.round(h * 0.75 * 10) / 10;
+    key = mode === "two" ? opts[2] : opts[0];
+    expl = "The altitude from the third vertex would be \\(h = b \\sin A = " + b + " \\sin " + A + "^\\circ \\approx " + fmt(h, 1) + "\\). Since side a is " + fmt(a, 1) + ", which is " + (mode === "two" ? "greater than h but less than b = " + b : "less than h") + ", " + (mode === "two" ? "the side of length a can swing to meet the base in two positions" : "the side of length a is too short to reach the base at all") + ".";
+  } else if (mode === "oneRight") {
+    A = 30; b = pick([10, 14, 18, 22]); a = b / 2;
+    key = opts[1];
+    expl = "The altitude from the third vertex would be \\(h = b \\sin A = " + b + " \\sin 30^\\circ = " + a + "\\). Side a equals h exactly, so the side of length a just reaches the base, forming a single right triangle.";
+  } else if (mode === "oneLong") {
+    A = pick([40, 50, 60]); b = pick([11, 13, 17]); a = b + ri(2, 7);
+    key = opts[1];
+    expl = "Side a (" + a + ") is longer than side b (" + b + "). The side of length a can meet the base in only one position on the correct side of the given angle, so only one triangle fits.";
+  } else {
+    A = pick([100, 110, 120, 130]); b = pick([10, 12, 14, 16, 18]);
+    if (mode === "obtOne") { a = b + ri(2, 8); key = opts[1]; expl = "Angle A is obtuse, so side a must be the longest side of the triangle. Since a = " + a + " is greater than b = " + b + ", exactly one triangle fits."; }
+    else { a = b - ri(1, 4); key = opts[0]; expl = "Angle A is obtuse, so side a must be the longest side of the triangle. Since a = " + a + " is not greater than b = " + b + ", no triangle fits."; }
+  }
+  var dis = opts.filter(function (o) { return o !== key; });
+  return mcq("In triangle ABC, angle A is " + A + "°, side b is " + b + " cm, and side a is " + fmt(a, 1) + " cm. How many different triangles satisfy these measurements?",
+    key, dis,
+    expl + " So <b>" + key.charAt(0).toLowerCase() + key.slice(1) + "</b>.",
+    { mode: mode, A: A, b: b, a: a });
+});
+
+/* ---- 7.3: steps in the proofs of the sine law and cosine law ---- */
+E("u1-law-proof-steps", 1, ["7.3"], 3, "var", varset([
+  function () {
+    return mcq("A proof of the sine law starts by drawing the altitude from vertex C of triangle ABC to side AB. The altitude has length h, with \\(h = b\\sin A\\) from one right triangle and \\(h = a\\sin B\\) from the other. Which step completes the proof of the sine law?",
+      "Set the two expressions for h equal, then divide both sides by \\(\\sin A \\sin B\\)",
+      ["Add the two expressions for h to get \\(2h = b\\sin A + a\\sin B\\)",
+       "Apply the Pythagorean theorem in both right triangles and add the results",
+       "Replace h with c in both expressions and simplify the result"],
+      "Setting the two expressions for the same altitude equal gives \\(b\\sin A = a\\sin B\\). Dividing both sides by \\(\\sin A \\sin B\\) gives \\(\\frac{b}{\\sin B} = \\frac{a}{\\sin A}\\), which is the sine law. The completing step is: <b>set the two expressions for h equal, then divide both sides by \\(\\sin A \\sin B\\)</b>.",
+      { v: 1 });
+  },
+  function () {
+    return mcq("In a proof of the cosine law, the altitude from C divides side AB into segments of length x and \\(c - x\\). The two right triangles give \\(b^2 = h^2 + x^2\\) and \\(a^2 = h^2 + (c - x)^2\\). Which step produces the cosine law from these equations?",
+      "Expand \\((c - x)^2\\), replace \\(h^2 + x^2\\) with \\(b^2\\), and use \\(x = b\\cos A\\)",
+      ["Expand \\((c - x)^2\\), replace \\(h^2 + x^2\\) with \\(a^2\\), and use \\(x = b\\sin A\\)",
+       "Set the two equations equal to eliminate h, then solve for x in terms of c",
+       "Expand \\((c - x)^2\\) and replace h with \\(b\\sin A\\) throughout both equations"],
+      "Expanding gives \\(a^2 = h^2 + c^2 - 2cx + x^2 = (h^2 + x^2) + c^2 - 2cx\\). The first equation says \\(h^2 + x^2 = b^2\\), and in the right triangle at A, \\(\\cos A = \\frac{x}{b}\\), so \\(x = b\\cos A\\). Substituting gives \\(a^2 = b^2 + c^2 - 2bc\\cos A\\). The step is: <b>expand \\((c - x)^2\\), replace \\(h^2 + x^2\\) with \\(b^2\\), and use \\(x = b\\cos A\\)</b>.",
+      { v: 2 });
+  },
+  function () {
+    return mcq("A second proof of the sine law writes the area of triangle ABC in two ways: \\(\\text{Area} = \\frac{1}{2}bc\\sin A\\) and \\(\\text{Area} = \\frac{1}{2}ac\\sin B\\). Which equality follows directly from setting these equal and dividing both sides by \\(\\frac{1}{2}c\\)?",
+      "\\(b\\sin A = a\\sin B\\)",
+      ["\\(b\\sin B = a\\sin A\\)", "\\(c\\sin A = a\\sin B\\)", "\\(b\\sin A = c\\sin B\\)"],
+      "Setting the two area expressions equal gives \\(\\frac{1}{2}bc\\sin A = \\frac{1}{2}ac\\sin B\\). Dividing both sides by \\(\\frac{1}{2}c\\) removes the common factors and leaves <b>\\(b\\sin A = a\\sin B\\)</b>, which rearranges into the sine law.",
+      { v: 3 });
+  },
+  function () {
+    return mcq("A proof of the cosine law for side a ends with \\(a^2 = b^2 + c^2 - 2bc\\cos A\\). Which fact is responsible for the \\(\\cos A\\) in the final term?",
+      "The side adjacent to angle A in the right triangle at A has length \\(x = b\\cos A\\)",
+      ["The identity \\(\\sin^2 A + \\cos^2 A = 1\\) is used to replace \\(h^2\\) in the final step",
+       "The sine law is applied to the altitude to rewrite h in terms of angle A",
+       "Angle A is assumed to be acute, so each of its ratios is a positive number"],
+      "When \\((c - x)^2\\) is expanded, the term \\(-2cx\\) appears. In the right triangle with hypotenuse b at vertex A, \\(\\cos A = \\frac{x}{b}\\), so \\(x = b\\cos A\\) and \\(-2cx = -2bc\\cos A\\). The fact is: <b>the side adjacent to angle A in the right triangle at A has length \\(x = b\\cos A\\)</b>.",
+      { v: 4 });
+  }
+]));
+
+/* ---- 7.13, 7.21: reflected terminal-arm points; patterns among ratio values ---- */
+E("u1-reflection-points", 1, ["7.13", "7.21"], 3, "gen", function () {
+  if (Math.random() < 0.5) {
+    var x = ri(2, 9), y = ri(2, 9);
+    var target = pick([2, 3, 4]);
+    var pts = { 2: "(" + (-x) + ", " + y + ")", 3: "(" + (-x) + ", " + (-y) + ")", 4: "(" + x + ", " + (-y) + ")" };
+    var corr = pts[target];
+    var others = ["(" + (-x) + ", " + y + ")", "(" + (-x) + ", " + (-y) + ")", "(" + x + ", " + (-y) + ")", "(" + y + ", " + x + ")"];
+    var dis = others.filter(function (s) { return s !== corr; });
+    var how = target === 2 ? "Quadrant II has the opposite x-sign from Quadrant I, with y unchanged" : target === 3 ? "Quadrant III has both signs opposite to Quadrant I" : "Quadrant IV has the opposite y-sign from Quadrant I, with x unchanged";
+    return mcq("The point P(" + x + ", " + y + ") lies on the terminal arm of an angle in standard position. Which point lies on the terminal arm of the angle in Quadrant " + ["I", "II", "III", "IV"][target - 1] + " that has the same reference angle?",
+      corr, dis,
+      "Angles with the same reference angle have terminal arms that are reflections of one another, so their points have the same coordinate magnitudes with signs set by the quadrant. " + how + ". The point is <b>" + corr + "</b>.",
+      { mode: "points", x: x, y: y, target: target });
+  }
+  var pats = [
+    { prompt: "Which statement about the sine ratio on the interval from 0° to 360° is true?",
+      correct: "As \\(\\theta\\) increases from \\(0^\\circ\\) to \\(90^\\circ\\), \\(\\sin\\theta\\) increases from 0 to 1",
+      dis: ["As \\(\\theta\\) increases from \\(0^\\circ\\) to \\(90^\\circ\\), \\(\\sin\\theta\\) decreases from 1 to 0",
+            "As \\(\\theta\\) increases from \\(90^\\circ\\) to \\(180^\\circ\\), \\(\\sin\\theta\\) increases from 1 to 2",
+            "As \\(\\theta\\) increases from \\(180^\\circ\\) to \\(270^\\circ\\), \\(\\sin\\theta\\) increases from 0 to 1"],
+      sol: "In Quadrant I, the y-coordinate on the terminal arm grows from 0 to its maximum, so \\(\\sin\\theta\\) increases from 0 to 1. It then falls back through Quadrant II, and it is negative through Quadrants III and IV." },
+    { prompt: "Which statement about ratio signs is true?",
+      correct: "\\(\\sin\\theta\\) is negative for every angle in Quadrant III",
+      dis: ["\\(\\sin\\theta\\) is positive for every angle in Quadrant III",
+            "\\(\\tan\\theta\\) is negative for every angle in Quadrant III",
+            "\\(\\cos\\theta\\) is positive for every angle in Quadrant III"],
+      sol: "In Quadrant III both coordinates on the terminal arm are negative, so sine and cosine are negative while tangent, a ratio of the two, is positive." },
+    { prompt: "Which statement about ratio values at axis angles is true?",
+      correct: "\\(\\cos\\theta = 0\\) when \\(\\theta = 90^\\circ\\) or \\(\\theta = 270^\\circ\\)",
+      dis: ["\\(\\sin\\theta = 0\\) when \\(\\theta = 90^\\circ\\) or \\(\\theta = 270^\\circ\\)",
+            "\\(\\cos\\theta = 0\\) when \\(\\theta = 0^\\circ\\) or \\(\\theta = 180^\\circ\\)",
+            "\\(\\tan\\theta = 0\\) when \\(\\theta = 90^\\circ\\) or \\(\\theta = 270^\\circ\\)"],
+      sol: "At 90° and 270° the terminal arm is vertical, so the x-coordinate is 0 and \\(\\cos\\theta = \\frac{x}{r} = 0\\). At those angles sine is 1 or -1 and tangent is undefined." },
+    { prompt: "Which statement about the tangent ratio is true?",
+      correct: "The values of \\(\\tan\\theta\\) are positive in Quadrants I and III",
+      dis: ["The values of \\(\\tan\\theta\\) are positive in Quadrants I and II",
+            "The values of \\(\\tan\\theta\\) are negative in Quadrants I and III",
+            "The values of \\(\\tan\\theta\\) are positive in Quadrants II and IV"],
+      sol: "Tangent is \\(\\frac{y}{x}\\), which is positive exactly when x and y have the same sign. That happens in Quadrant I (both positive) and Quadrant III (both negative)." },
+    { prompt: "Which statement about the cosine ratio on the interval from 0° to 360° is true?",
+      correct: "As \\(\\theta\\) increases from \\(180^\\circ\\) to \\(270^\\circ\\), \\(\\cos\\theta\\) increases from \\(-1\\) to 0",
+      dis: ["As \\(\\theta\\) increases from \\(180^\\circ\\) to \\(270^\\circ\\), \\(\\cos\\theta\\) decreases from \\(-1\\) to 0",
+            "As \\(\\theta\\) increases from \\(180^\\circ\\) to \\(270^\\circ\\), \\(\\sin\\theta\\) increases from 0 to \\(-1\\)",
+            "As \\(\\theta\\) increases from \\(180^\\circ\\) to \\(270^\\circ\\), \\(\\cos\\theta\\) decreases from 0 to \\(-1\\)"],
+      sol: "At 180° the terminal arm points along the negative x-axis, so \\(\\cos\\theta = -1\\). Turning toward 270° brings the x-coordinate back up to 0, so cosine increases from -1 to 0." }
+  ];
+  var p = pick(pats);
+  return mcq(p.prompt, p.correct, p.dis, p.sol + " The true statement is <b>" + p.correct + "</b>.", { mode: "pattern" });
+});
+
+/* ================= Unit 2: Quadratic Functions ================= */
+/* ================= Unit 2: Quadratic Functions (MA2200.4.27 to 4.32, 4.37 to 4.47) =================
+   Tranche 1, mid scope. All stems, contexts and values are original.
+   Helpers are prefixed u2; entries register through E(...). */
+
+/* ---------- u2 helpers ---------- */
+function u2VS(a,p,q){ /* vertex form a(x - p)^2 + q as a string */
+  var s=(a===1?"":a===-1?"-":""+a);
+  if(p===0) s+="x^2";
+  else s+="(x"+(p>0?" - "+p:" + "+(-p))+")^2";
+  if(q>0) s+=" + "+q; else if(q<0) s+=" - "+(-q);
+  return s;
+}
+function u2Std(a,b,c){ /* ax^2 + bx + c as a string */
+  var s=(a===1?"x^2":a===-1?"-x^2":a+"x^2");
+  if(b!==0) s+=(b>0?" + ":" - ")+(Math.abs(b)===1?"x":Math.abs(b)+"x");
+  if(c!==0) s+=(c>0?" + ":" - ")+Math.abs(c);
+  return s;
+}
+function u2QuadB(B){ /* x^2 + Bx as a string, B nonzero */
+  return "x^2"+(B>0?" + ":" - ")+(Math.abs(B)===1?"x":Math.abs(B)+"x");
+}
+function u2JoinSigned(nums){ var out=""; nums.forEach(function(v,i){ if(i===0) out=""+v; else out+=(v<0?" - "+(-v):" + "+v); }); return out; }
+function u2Pair(x,y){ return "\\(("+x+", "+y+")\\)"; }
+function u2Plot(fn,x0,x1,o){ /* axes-and-curve SVG, y-range fitted from samples and capped */
+  o=o||{}; var W=440,H=250,pad=26,i,x,y,mn=1e18,mx=-1e18;
+  for(i=0;i<=200;i++){ x=x0+(x1-x0)*i/200; y=fn(x); if(isFinite(y)){ if(y<mn)mn=y; if(y>mx)mx=y; } }
+  var y1=(o.y1!==undefined)?o.y1:Math.min(90,Math.max(12,Math.ceil(mx*1.2)));
+  var y0=(o.y0!==undefined)?o.y0:Math.max(-90,Math.min(-12,Math.floor(mn*1.2)));
+  var X=function(v){ return pad+(v-x0)/(x1-x0)*(W-2*pad); };
+  var Y=function(v){ return H-pad-(v-y0)/(y1-y0)*(H-2*pad); };
+  var out='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:440px;background:#fff;border:1px solid #d8d2c4;border-radius:6px" xmlns="http://www.w3.org/2000/svg">';
+  var gy=(y1-y0>90)?20:((y1-y0>45)?10:((y1-y0>22)?5:2)), gx, gyv;
+  for(gx=Math.ceil(x0);gx<=x1;gx+=1){ out+='<line x1="'+fmt(X(gx),1)+'" y1="'+pad+'" x2="'+fmt(X(gx),1)+'" y2="'+(H-pad)+'" stroke="#eae5d6" stroke-width="1"/>';
+    out+='<text x="'+fmt(X(gx),1)+'" y="'+(H-6)+'" font-size="9" fill="#5a5344" text-anchor="middle">'+gx+'</text>'; }
+  for(gyv=Math.ceil(y0/gy)*gy;gyv<=y1;gyv+=gy){ out+='<line x1="'+pad+'" y1="'+fmt(Y(gyv),1)+'" x2="'+(W-pad)+'" y2="'+fmt(Y(gyv),1)+'" stroke="#eae5d6" stroke-width="1"/>';
+    if(gyv!==0) out+='<text x="'+(pad-4)+'" y="'+fmt(Y(gyv)+3,1)+'" font-size="9" fill="#5a5344" text-anchor="end">'+gyv+'</text>'; }
+  if(y0<0&&y1>0) out+='<line x1="'+pad+'" y1="'+fmt(Y(0),1)+'" x2="'+(W-pad)+'" y2="'+fmt(Y(0),1)+'" stroke="#17352a" stroke-width="1.3"/>';
+  if(x0<0&&x1>0) out+='<line x1="'+fmt(X(0),1)+'" y1="'+pad+'" x2="'+fmt(X(0),1)+'" y2="'+(H-pad)+'" stroke="#17352a" stroke-width="1.3"/>';
+  out+='<text x="'+(W-pad-2)+'" y="'+fmt(Y(0)-6,1)+'" font-size="12" fill="#17352a" text-anchor="end">x</text>';
+  out+='<text x="'+fmt(X(0)+6,1)+'" y="'+(pad-8)+'" font-size="12" fill="#17352a">y</text>';
+  var pts=[], N=160;
+  for(i=0;i<=N;i++){ x=x0+(x1-x0)*i/N; y=fn(x); if(y<y0)y=y0; if(y>y1)y=y1; pts.push(fmt(X(x),1)+","+fmt(Y(y),1)); }
+  out+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="#0f766e" stroke-width="2.2"/>';
+  (o.points||[]).forEach(function(p){ out+='<circle cx="'+fmt(X(p[0]),1)+'" cy="'+fmt(Y(p[1]),1)+'" r="3.6" fill="#b3541e"/>'; });
+  return out+'</svg>';
+}
+
+/* ---------- 4.29: effect of a on the width of y = ax^2 (L1) ---------- */
+E("u2-effect-of-a",2,["4.29"],1,"gen",function(){
+  var pool=[{d:"2",v:2},{d:"3",v:3},{d:"4",v:4},{d:"5",v:5},{d:"-2",v:-2},{d:"-3",v:-3},
+            {d:"\\frac{1}{2}",v:0.5},{d:"\\frac{1}{3}",v:1/3},{d:"\\frac{1}{4}",v:0.25},
+            {d:"\\frac{2}{3}",v:2/3},{d:"\\frac{3}{4}",v:0.75},{d:"\\frac{1}{5}",v:0.2}];
+  if(ri(0,2)<2){ /* compare a set of three parabolas */
+    var att=0, it1, it2;
+    while(att<200){
+      att++;
+      it1=pick(pool); it2=pick(pool);
+      if(Math.abs(it1.v)!==Math.abs(it2.v)) break;
+    }
+    var askWide=ri(0,1)===0;
+    var items=[{d:"",v:1},{d:it1.d,v:it1.v},{d:it2.d,v:it2.v}];
+    function eqOf(it){ return "\\(y = "+(it.d===""?"":it.d)+"x^2\\)"; }
+    var target=items.slice().sort(function(m,n){ return askWide ? Math.abs(m.v)-Math.abs(n.v) : Math.abs(n.v)-Math.abs(m.v); })[0];
+    var keyEq=eqOf(target);
+    var dis=items.filter(function(it){ return eqOf(it)!==keyEq; }).map(eqOf);
+    dis.push("All three parabolas are equally wide.");
+    var absList=items.map(function(it){ var av=Math.abs(it.v); return "\\(\\left|"+(it.d===""?"1":it.d)+"\\right| "+(Number.isInteger(av*4)?"=":"\\approx")+" "+fmt(av,2)+"\\)"; }).join(", ");
+    return mcq("The graphs of \\(y = x^2\\), \\(y = "+it1.d+"x^2\\) and \\(y = "+it2.d+"x^2\\) are drawn on the same axes. Which parabola is the <b>"+(askWide?"widest":"narrowest")+"</b>?",
+      keyEq, dis,
+      "Comparing parabolas of the form \\(y = ax^2\\), the width is decided by \\(\\left|a\\right|\\): the larger \\(\\left|a\\right|\\) is, the faster the values grow and the narrower the parabola; the smaller \\(\\left|a\\right|\\), the wider it is. Here the absolute values are "+absList+". So the "+(askWide?"widest":"narrowest")+" parabola is "+keyEq+". A negative value of \\(a\\) reflects a parabola in the x-axis but does not change its width.",
+      {askWide:askWide, v1:it1.v, v2:it2.v});
+  }
+  var it=pick(pool);
+  var W=Math.abs(it.v)>1?"narrower":"wider", O=it.v>0?"opens upward":"opens downward";
+  var W2=Math.abs(it.v)>1?"wider":"narrower", O2=it.v>0?"opens downward":"opens upward";
+  function stmt(w,o){ return "It is "+w+" and "+o+"."; }
+  return mcq("Compared with the graph of \\(y = x^2\\), how does the graph of \\(y = "+it.d+"x^2\\) differ?",
+    stmt(W,O), [stmt(W2,O), stmt(W,O2), stmt(W2,O2)],
+    "For \\(y = ax^2\\), compare \\(\\left|a\\right|\\) with 1 and check the sign of \\(a\\). Here \\(\\left|a\\right| = "+fmt(Math.abs(it.v),2)+"\\), which is "+(Math.abs(it.v)>1?"greater":"less")+" than 1, so the values of \\(y\\) change "+(Math.abs(it.v)>1?"faster":"more slowly")+" than for \\(y = x^2\\) and the parabola is "+W+". The coefficient is "+(it.v>0?"positive, so the parabola still opens upward.":"negative, so the parabola is reflected in the x-axis and opens downward."),
+    {v:it.v});
+});
+
+/* ---------- 4.30 and 4.31: translations from p and q (L1) ---------- */
+E("u2-translations",2,["4.30","4.31"],1,"gen",function(){
+  var fam=pick(["p","q","both"]);
+  if(fam==="p"){
+    var p=ri(2,8), sgn=pick([1,-1]);
+    var form=sgn>0?"(x - "+p+")^2":"(x + "+p+")^2";
+    var keyDir=sgn>0?"to the right":"to the left", altDir=sgn>0?"to the left":"to the right";
+    return mcq("The graph of \\(y = x^2\\) is transformed to the graph of \\(y = "+form+"\\). How does the graph change?",
+      "It shifts "+p+" units "+keyDir+".",
+      ["It shifts "+p+" units "+altDir+".", "It shifts "+p+" units up.", "It shifts "+p+" units down."],
+      "Replacing \\(x\\) by \\("+(sgn>0?"(x - "+p+")":"(x + "+p+")")+"\\) shifts every point of the graph "+p+" units "+keyDir+": the value in the brackets must reach the same size as before, so each point moves "+keyDir+" by "+p+". The sign inside the brackets points opposite to the direction of the shift.",
+      {fam:fam, p:p, sgn:sgn});
+  }
+  if(fam==="q"){
+    var q=ri(2,9), up=ri(0,1)===0;
+    var form2=up?"x^2 + "+q:"x^2 - "+q;
+    return mcq("The graph of \\(y = x^2\\) is transformed to the graph of \\(y = "+form2+"\\). How does the graph change?",
+      "It shifts "+q+" units "+(up?"up":"down")+".",
+      ["It shifts "+q+" units "+(up?"down":"up")+".", "It shifts "+q+" units to the right.", "It shifts "+q+" units to the left."],
+      "Adding a constant to the whole function moves every point straight up or down by that amount. Here "+(up?"\\(+"+q+"\\) is added, so each y-value grows by "+q+" and the graph shifts "+q+" units up.":"\\("+q+"\\) is subtracted, so each y-value drops by "+q+" and the graph shifts "+q+" units down."),
+      {fam:fam, q:q, up:up});
+  }
+  var p2=ri(2,8), q2=ri(2,8), sp=pick([1,-1]), sq=pick([1,-1]);
+  var H=sp>0?"to the right":"to the left", H2=sp>0?"to the left":"to the right";
+  var V=sq>0?"up":"down", V2=sq>0?"down":"up";
+  function st(h,v){ return "It shifts "+p2+" units "+h+" and "+q2+" units "+v+"."; }
+  return mcq("The graph of \\(y = x^2\\) is transformed to the graph of \\(y = "+u2VS(1,sp*p2,sq*q2)+"\\). How does the graph change?",
+    st(H,V), [st(H2,V), st(H,V2), st(H2,V2)],
+    "The two changes act independently. Inside the brackets, \\((x "+(sp>0?"- ":"+ ")+p2+")\\) shifts the graph "+p2+" units "+H+" (the sign inside points opposite to the shift). The constant "+(sq>0?"+ "+q2:"- "+q2)+" added to the whole function shifts it "+q2+" units "+V+".",
+    {fam:fam, p:p2, q:q2, sp:sp, sq:sq});
+});
+
+/* ---------- 4.38: read the vertex from vertex form (L1) ---------- */
+E("u2-vertex-read",2,["4.38"],1,"gen",function(){
+  var a=pick([1,2,3,-1,-2,-3]);
+  var p=0, q=0;
+  while(p===0) p=ri(-6,6);
+  while(q===0) q=ri(-6,6);
+  return mcq("What are the coordinates of the <b>vertex</b> of the graph of \\(y = "+u2VS(a,p,q)+"\\)?",
+    u2Pair(p,q), [u2Pair(-p,q), u2Pair(p,-q), u2Pair(-p,-q)],
+    "In the form \\(y = a(x - p)^2 + q\\), the vertex is \\((p, q)\\): the squared part is zero when \\(x = "+p+"\\), and the value of the function there is \\("+q+"\\). A check on a graphing utility shows the turning point at "+u2Pair(p,q)+", confirming the read-off.",
+    {a:a, p:p, q:q});
+});
+
+/* ---------- 4.27: number of x-intercepts from a and q (L2) ---------- */
+E("u2-intercepts-count",2,["4.27"],2,"gen",function(){
+  var mode=pick(["two","two","one","none","none"]);
+  var a=pick([1,2,3,-1,-2,-3]), q;
+  if(mode==="one") q=0;
+  else if(mode==="two"){ q=ri(1,9)*(a>0?-1:1); }
+  else { q=ri(1,9)*(a>0?1:-1); }
+  var key=mode==="two"?"Two x-intercepts":mode==="one"?"One x-intercept":"No x-intercepts";
+  var dis=["Two x-intercepts","One x-intercept","No x-intercepts","More information is needed"].filter(function(s){ return s!==key; });
+  var extrem=a>0?"minimum":"maximum";
+  var sol;
+  if(mode==="two"){
+    sol="The vertex of the graph is \\((p, q)\\), so \\(q = "+q+"\\) is the "+extrem+" value of the function. Since \\(a = "+a+"\\) and the "+extrem+" value lies on the opposite side of the x-axis from the ends of the graph, the graph must cross the x-axis on both sides of the vertex: two x-intercepts. The value of \\(p\\) only slides the graph sideways, so it cannot change the count.";
+  } else if(mode==="one"){
+    sol="The vertex of the graph is \\((p, q)\\), and here \\(q = 0\\), so the vertex sits exactly on the x-axis. Since \\(a = "+a+"\\), the rest of the graph lies entirely on one side of the axis, so the graph touches the axis at the vertex and nowhere else: one x-intercept. The value of \\(p\\) only slides the graph sideways, so it cannot change the count.";
+  } else {
+    sol="The vertex of the graph is \\((p, q)\\), so \\(q = "+q+"\\) is the "+extrem+" value of the function. Since \\(a = "+a+"\\), the graph opens "+(a>0?"upward from a minimum":"downward from a maximum")+" that is already on the same side of the x-axis as the rest of the graph, so the graph never reaches the x-axis: no x-intercepts. The value of \\(p\\) only slides the graph sideways, so it cannot change the count.";
+  }
+  return mcq("A quadratic function is written as \\(y = a(x - p)^2 + q\\), with \\(a = "+a+"\\) and \\(q = "+q+"\\). How many <b>x-intercepts</b> does its graph have?",
+    key, dis, sol, {a:a, q:q, mode:mode});
+});
+
+/* ---------- 4.28: features of a graphed parabola in vertex form (L2) ---------- */
+E("u2-graph-features",2,["4.28"],2,"gen",function(){
+  var a=pick([1,2,-1,-2]);
+  var p=0, q=0;
+  while(p===0) p=ri(-4,4);
+  while(q===0) q=ri(-4,4);
+  var fn=function(x){ return a*(x-p)*(x-p)+q; };
+  function feat(vx, vy, ax, geq, open){
+    return "Vertex: \\(("+vx+", "+vy+")\\); axis of symmetry: \\(x = "+ax+"\\); range: \\(y "+(geq?"\\geq":"\\leq")+" "+vy+"\\); opens "+open;
+  }
+  var up=a>0;
+  var key=feat(p, q, p, up, up?"upward":"downward");
+  var d1=feat(-p, q, p, up, up?"upward":"downward");
+  var d2=feat(p, q, p, !up, up?"upward":"downward");
+  var d3=feat(p, q, p, up, up?"downward":"upward");
+  var qq=mcq("The graph of \\(y = "+u2VS(a,p,q)+"\\) is shown. Which list of features matches the graph?",
+    key, [d1, d2, d3],
+    "Start from \\(y = x^2\\) and apply the transformations: the graph shifts "+(p>0?p+" units to the right":(-p)+" units to the left")+" and "+(q>0?q+" units up":(-q)+" units down")+(a===-1||a===1?"":", and the values are stretched by a factor of \\("+Math.abs(a)+"\\)")+(a<0?", and it is reflected in the x-axis":"")+". The vertex lands at \\(("+p+", "+q+")\\), the axis of symmetry is the vertical line through the vertex, \\(x = "+p+"\\), and because the graph opens "+(up?"upward, the smallest value is the vertex value, giving the range \\(y \\geq "+q+"\\)":"downward, the largest value is the vertex value, giving the range \\(y \\leq "+q+"\\)")+".",
+    {a:a, p:p, q:q});
+  qq.figure=u2Plot(fn, p-5, p+5, {points:[[p,q]]});
+  return qq;
+});
+
+/* ---------- 4.32: vertex of a standard-form quadratic (L2) ---------- */
+E("u2-vertex-standard",2,["4.32"],2,"gen",function(){
+  var a=pick([1,2,3,-1,-2]);
+  var p=0, q=0, att=0, b, c;
+  while(att<200){
+    att++;
+    p=0; while(p===0) p=ri(-5,5);
+    q=ri(-6,6);
+    b=-2*a*p; c=a*p*p+q;
+    var fneg=a*p*p - b*p + c; /* f(-p) */
+    if(q!==c && fneg!==q && fneg!==c) break;
+  }
+  b=-2*a*p; c=a*p*p+q;
+  var fneg2=a*p*p - b*p + c;
+  var sub=(a===1?"":a===-1?"-":""+a)+"("+p+")^2"+(b>0?" + "+b+"("+p+")":b<0?" - "+(-b)+"("+p+")":"")+(c>0?" + "+c:c<0?" - "+(-c):"");
+  return mcq("What is the <b>vertex</b> of the graph of \\(y = "+u2Std(a,b,c)+"\\)?",
+    u2Pair(p,q), [u2Pair(-p,q), u2Pair(p,c), u2Pair(p,fneg2)],
+    "To sketch the graph, first find its turning point. The vertex sits on the axis of symmetry, \\(x = \\frac{-b}{2a}\\):"+
+    "\\[ \\begin{aligned} x &= \\frac{-b}{2a} = \\frac{"+(-b)+"}{"+(2*a)+"} = "+p+" \\\\ y &= "+sub+" \\\\ &= "+u2JoinSigned([a*p*p, b*p, c])+" \\\\ &= "+q+" \\end{aligned} \\]"+
+    "So the vertex, the point where the graph turns, is "+u2Pair(p,q)+".",
+    {a:a, p:p, q:q, b:b, c:c});
+});
+
+/* ---------- 4.41: characteristics of a standard-form quadratic (L2) ---------- */
+E("u2-characteristics-standard",2,["4.41"],2,"gen",function(){
+  var a=pick([1,2,-1,-2]);
+  var p=0; while(p===0) p=ri(-5,5);
+  var q=ri(-6,6); if(q===0) q=3;
+  var b=-2*a*p, c=a*p*p+q;
+  function stYint(v){ return "The y-intercept is \\("+v+"\\)."; }
+  function stAxis(v){ return "The axis of symmetry is \\(x = "+v+"\\)."; }
+  function stOpen(upw){ return upw?"The parabola opens upward.":"The parabola opens downward."; }
+  function stExtr(isMax, v, x){ return "The "+(isMax?"maximum":"minimum")+" value is \\("+v+"\\), reached at \\(x = "+x+"\\)."; }
+  var falseYint=[b, q, -c, c+1].filter(function(v){ return v!==c; })[0];
+  var chars={
+    yint:{ t:stYint(c), f:stYint(falseYint) },
+    axis:{ t:stAxis(p), f:stAxis(-p) },
+    open:{ t:stOpen(a>0), f:stOpen(a<0) },
+    extr:{ t:stExtr(a<0, q, p), f:stExtr(a>0, q, p) }
+  };
+  var keyChar=pick(["yint","axis","open","extr"]);
+  var opts={};
+  ["yint","axis","open","extr"].forEach(function(k){ opts[k]=(k===keyChar?chars[k].t:chars[k].f); });
+  return mcq("Which statement about the graph of \\(y = "+u2Std(a,b,c)+"\\) is <b>correct</b>?",
+    opts[keyChar], ["yint","axis","open","extr"].filter(function(k){ return k!==keyChar; }).map(function(k){ return opts[k]; }),
+    "Work through the characteristics one at a time. The y-intercept comes from setting \\(x = 0\\), which leaves \\(y = "+c+"\\). The axis of symmetry is \\(x = \\frac{-b}{2a} = \\frac{"+(-b)+"}{"+(2*a)+"} = "+p+"\\). Since \\(a = "+a+"\\) is "+(a>0?"positive":"negative")+", the parabola opens "+(a>0?"upward":"downward")+", so the vertex \\(("+p+", "+q+")\\) gives a "+(a>0?"minimum":"maximum")+" value of \\("+q+"\\). Only one of the four statements matches all of this.",
+    {a:a, p:p, q:q, keyChar:keyChar});
+});
+
+/* ---------- 4.43 and 4.45: complete the square, and verify two forms agree (L2) ---------- */
+E("u2-complete-square",2,["4.43","4.45"],2,"gen",function(){
+  var fam=pick(["convert","verify"]);
+  var a=1, p=0, q=0, b=0, c=0, key="", att=0, dis=[];
+  while(att<200){
+    att++;
+    a=pick([1,1,2,-1,-2]);
+    p=0; while(p===0) p=ri(-5,5);
+    q=0; while(q===0) q=ri(-6,6);
+    b=-2*a*p; c=a*p*p+q;
+    key="\\(y = "+u2VS(a,p,q)+"\\)";
+    var pool=["\\(y = "+u2VS(a,-p,q)+"\\)", "\\(y = "+u2VS(a,p,c)+"\\)", "\\(y = "+u2VS(a,p,-q)+"\\)", "\\(y = "+u2VS(a,-p,-q)+"\\)"];
+    if(a!==1) pool.push("\\(y = "+u2VS(1,p,q)+"\\)");
+    dis=[]; var seen={};
+    pool.forEach(function(s){ if(s!==key && !seen[s]){ seen[s]=1; dis.push(s); } });
+    if(dis.length>=3){ dis=dis.slice(0,3); break; }
+  }
+  var B=b/a, P2=p*p;
+  var aPre=(a===1?"":a===-1?"-":""+a);
+  var cTail=(c>0?" + "+c:c<0?" - "+(-c):"");
+  var sol;
+  if(fam==="convert"){
+    var lines="\\[ \\begin{aligned} y &= "+u2Std(a,b,c)+" \\\\ ";
+    if(a===1){
+      lines+="&= \\left("+u2QuadB(B)+" + "+P2+"\\right) + \\left("+u2JoinSigned([c,-P2])+"\\right) \\\\ &= "+u2VS(a,p,q)+" \\end{aligned} \\]";
+    } else {
+      lines+="&= "+aPre+"\\left("+u2QuadB(B)+"\\right)"+cTail+" \\\\ &= "+aPre+"\\left("+u2QuadB(B)+" + "+P2+"\\right) + \\left("+u2JoinSigned([c,-a*P2])+"\\right) \\\\ &= "+u2VS(a,p,q)+" \\end{aligned} \\]";
+    }
+    sol="Complete the square on the x-terms. Half of the coefficient of \\(x\\) inside the brackets is \\("+(B/2)+"\\), and \\("+(B/2)+"\\) squared is \\("+P2+"\\); that amount is added inside the brackets and balanced outside them:"+
+      lines+
+      "The result is the vertex form \\(y = "+u2VS(a,p,q)+"\\) with vertex \\(("+p+", "+q+")\\).";
+    return mcq("Rewrite \\(y = "+u2Std(a,b,c)+"\\) in the form \\(y = a(x - p)^2 + q\\).",
+      key, dis, sol, {fam:fam, a:a, p:p, q:q});
+  }
+  sol="Expand the squared bracket in the matching choice and compare term by term:"+
+    "\\[ \\begin{aligned} "+u2VS(a,p,q)+" &= "+aPre+"\\left("+u2Std(1,-2*p,P2)+"\\right) "+(q>0?"+ "+q:"- "+(-q))+" \\\\ &= "+u2Std(a,b,a*P2)+(q>0?" + "+q:" - "+(-q))+" \\\\ &= "+u2Std(a,b,c)+" \\end{aligned} \\]"+
+    "The expansion gives exactly \\(y = "+u2Std(a,b,c)+"\\), so the two forms represent the same function. The other choices expand to different quadratics.";
+  return mcq("Which function represents the <b>same function</b> as \\(y = "+u2Std(a,b,c)+"\\)?",
+    key, dis, sol, {fam:fam, a:a, p:p, q:q});
+});
+
+/* ---------- 4.42: reasoning inside completing the square (L2, var) ---------- */
+E("u2-cts-reasoning",2,["4.42"],2,"var",varset([
+  function(){
+    var b=pick([2,4,6,8,10,-2,-4,-6,-8,-10]), h=b/2, h2=h*h;
+    var facS="(x"+(h>0?" + "+h:" - "+(-h))+")^2";
+    return mcq("A student begins completing the square on \\("+u2QuadB(b)+"\\) by adding \\("+h2+"\\). Why is \\("+h2+"\\) the number that is added?",
+      "Because half of the coefficient of \\(x\\) is \\("+h+"\\), and adding its square makes \\("+u2QuadB(b)+" + "+h2+"\\) a perfect square: it factors as \\("+facS+"\\).",
+      ["To eliminate the \\(x\\) term so that the expression is left with only two terms.",
+       "To make the constant term of the expression equal to the coefficient of \\(x\\).",
+       "Because the square of the full coefficient of \\(x\\) must always be added first."],
+      "Completing the square aims at the pattern \\((x + k)^2 = x^2 + 2kx + k^2\\). Matching \\(2k\\) with the coefficient \\("+b+"\\) gives \\(k = "+h+"\\), so the constant to add is \\(k^2 = "+h2+"\\). With it added, the trinomial factors as \\("+facS+"\\).",
+      {b:b});
+  },
+  function(){
+    var b=pick([2,4,6,8,-2,-4,-6,-8]), h=b/2, h2=h*h, c=pick([1,3,5,7,-2,-4]);
+    return mcq("When \\(y = "+u2Std(1,b,c)+"\\) is rewritten by completing the square, the work includes the step \\(y = "+u2QuadB(b)+" + "+h2+" - "+h2+(c>0?" + "+c:" - "+(-c))+"\\). Why is \\("+h2+"\\) subtracted as well as added?",
+      "Adding and subtracting the same number does not change the value of the expression, so the rewritten function is still equivalent to the original one.",
+      ["So that the y-intercept of the graph ends up in a different position.",
+       "Because a square has to be completed on both sides of the equation.",
+       "To make the constant term of the function a perfect square as well."],
+      "The \\(+"+h2+"\\) is there to complete the square, but it changes the value of the expression unless it is balanced. Subtracting \\("+h2+"\\) again keeps the new expression equal to \\("+u2Std(1,b,c)+"\\) for every value of \\(x\\), which is what makes the rewriting a rewriting of the same function.",
+      {b:b, c:c});
+  },
+  function(){
+    var a=pick([2,3]), B=pick([4,6,8]), c=pick([1,2,5,7]);
+    return mcq("To rewrite \\(y = "+u2Std(a,a*B,c)+"\\) by completing the square, the first step gives \\(y = "+a+"\\left("+u2QuadB(B)+"\\right) + "+c+"\\). Why does the coefficient of \\(x^2\\) inside the brackets need to be 1?",
+      "The pattern \\((x + k)^2 = x^2 + 2kx + k^2\\) has \\(x^2\\) with coefficient 1, so halving the \\(x\\)-coefficient gives \\(k\\) only when the \\(x^2\\) coefficient is 1.",
+      ["Because a perfect square trinomial can never have a coefficient in front of it.",
+       "So that the constant term can be factored out of the brackets at the same time.",
+       "Because the quadratic formula can only be used when the leading coefficient is 1."],
+      "Inside the brackets the work matches the trinomial against \\((x + k)^2 = x^2 + 2kx + k^2\\), whose \\(x^2\\) coefficient is 1. Factoring out \\("+a+"\\) first makes the bracket a monic trinomial, so half of \\("+B+"\\) is the value of \\(k\\) to use. The constant \\("+c+"\\) is not part of the square being completed and stays outside.",
+      {a:a, B:B});
+  },
+  function(){
+    var b=pick([2,4,6,8,10,-2,-4,-6,-8,-10]), h=b/2, h2=h*h, c=pick([2,3,5,-1,-4,6]);
+    var q=c-h2;
+    var facS="(x"+(h>0?" + "+h:" - "+(-h))+")^2";
+    return mcq("The work for rewriting \\(y = "+u2Std(1,b,c)+"\\) by completing the square is shown:"+
+      "\\[ \\begin{aligned} y &= "+u2QuadB(b)+" + "+h2+" + \\left("+u2JoinSigned([c,-h2])+"\\right) \\\\ &= "+facS+(q>0?" + "+q:" - "+(-q))+" \\end{aligned} \\]"+
+      "What does the last step, writing \\("+u2QuadB(b)+" + "+h2+"\\) as \\("+facS+"\\), accomplish?",
+      "It puts the function in vertex form, so the vertex and the transformations of the graph can be read off directly.",
+      ["It solves the equation \\(y = 0\\) for the x-intercepts of the graph.",
+       "It removes the constant term from the function completely.",
+       "It factors the original trinomial into two different binomials."],
+      "The trinomial \\("+u2QuadB(b)+" + "+h2+"\\) is a perfect square, equal to \\("+facS+"\\). Writing it that way turns the whole function into vertex form, \\(y = "+u2VS(1,-h,q)+"\\), and the vertex \\(("+(-h)+", "+q+")\\) can be read from it. Nothing has been solved and no term has been dropped.",
+      {b:b, c:c});
+  }
+]));
+
+/* ---------- 4.37: why vertex form is a quadratic function (L2, var) ---------- */
+E("u2-why-quadratic",2,["4.37"],2,"var",varset([
+  function(){
+    return mcq("The function \\(y = a(x - p)^2 + q\\) is a quadratic function only when \\(a \\neq 0\\). Why does setting \\(a = 0\\) destroy the quadratic property?",
+      "If \\(a = 0\\), the whole squared term becomes 0 and the function reduces to the constant \\(y = q\\), which has degree 0.",
+      ["If \\(a = 0\\), the function becomes linear, because the \\(x\\) term from the expansion is the highest term left.",
+       "If \\(a = 0\\), the squared term still contains an \\(x^2\\) term, so the function stays quadratic.",
+       "If \\(a = 0\\), the vertex of the graph moves to the origin, which a quadratic cannot have."],
+      "The factor \\(a\\) multiplies the entire squared bracket. When \\(a = 0\\), that bracket contributes nothing, no matter what \\(x\\) is, and only the constant \\(q\\) survives. A constant function has degree 0, so it is not a quadratic function; this is why the definition of the form includes the condition \\(a \\neq 0\\).",
+      {});
+  },
+  function(){
+    var a=pick([2,3,4,5]), p=pick([1,2,3]), q=pick([1,2,3,4,5,6]);
+    var lin=pick([3,5,7]), cub=pick([2,4]);
+    return mcq("Which function is a <b>quadratic function</b>?",
+      "\\(f(x) = "+u2VS(a,p,q)+"\\)",
+      ["\\(f(x) = "+lin+"x - "+pick([1,2,6])+"\\)",
+       "\\(f(x) = x^3 - "+cub+"x\\)",
+       "\\(f(x) = \\sqrt{x} + "+pick([2,4])+"\\)"],
+      "A quadratic function is a polynomial function of degree 2. Expanding \\("+u2VS(a,p,q)+"\\) gives \\("+u2Std(a,-2*a*p,a*p*p+q)+"\\), which has degree 2. The others have degree 1, degree 3, and a square root of the variable, so none of them is quadratic.",
+      {a:a, p:p, q:q});
+  },
+  function(){
+    var a=pick([2,3,4]), p=pick([1,2,3]), q=pick([1,2,3,4,5,6]);
+    var std=u2Std(a,-2*a*p,a*p*p+q);
+    return mcq("A classmate claims that \\(y = "+u2VS(a,p,q)+"\\) is not a quadratic function, because it contains no \\(x^2\\) term. Which statement corrects the claim?",
+      "Expanding gives \\(y = "+std+"\\), which does contain an \\(x^2\\) term, so the function is quadratic.",
+      ["The claim is correct. A quadratic function must show an \\(x^2\\) term in the form it is written.",
+       "The claim is correct. The squared bracket makes the function a quartic, not a quadratic.",
+       "The claim is incorrect. The function is quadratic because the constant \\("+q+"\\) shifts the graph up."],
+      "Whether a function is quadratic is decided after it is written as a polynomial: expanding the squared bracket gives \\(y = "+std+"\\). The \\(x^2\\) term was there all along, hidden inside the squared bracket, and its coefficient \\("+a+"\\) is not zero, so the function has degree 2.",
+      {a:a, p:p, q:q});
+  },
+  function(){
+    return mcq("When \\(y = a(x - p)^2 + q\\) is expanded into the form \\(y = ax^2 + bx + c\\), what is the coefficient of the \\(x\\) term?",
+      "\\(-2ap\\)",
+      ["\\(2ap\\)", "\\(-ap\\)", "\\(ap\\)"],
+      "Expand the squared bracket first: \\((x - p)^2 = x^2 - 2px + p^2\\). Multiplying by \\(a\\) gives \\(ax^2 - 2apx + ap^2\\), and adding \\(q\\) does not affect the \\(x\\) term. So the coefficient of \\(x\\) is \\(-2ap\\).",
+      {});
+  }
+]));
+
+/* ---------- 4.40: write a quadratic from a vertex and a point or intercept (L2) ---------- */
+E("u2-write-from-characteristics",2,["4.40"],2,"gen",function(){
+  var fam=pick(["point","yint"]);
+  var a=pick([1,2,3,-1,-2,-3]);
+  var p=0; while(p===0) p=ri(-4,4);
+  var q=ri(-5,5);
+  var key="\\(y = "+u2VS(a,p,q)+"\\)";
+  var pool=["\\(y = "+u2VS(-a,p,q)+"\\)", "\\(y = "+u2VS(a,-p,q)+"\\)", "\\(y = "+u2VS(a,p,-q)+"\\)", "\\(y = "+u2VS(a,-p,-q)+"\\)", "\\(y = "+u2VS(a+(a>0?1:-1),p,q)+"\\)"];
+  var dis=[], seen={};
+  pool.forEach(function(s){ if(s!==key && !seen[s]){ seen[s]=1; dis.push(s); } });
+  dis=dis.slice(0,3);
+  var qTail=(q>0?" + "+q:q<0?" - "+(-q):"");
+  if(fam==="point"){
+    var d=pick([1,2,3]), x1=p+(ri(0,1)===0?d:-d), y1=a*d*d+q, dx=x1-p;
+    return mcq("A parabola has vertex \\(("+p+", "+q+")\\) and passes through the point \\(("+x1+", "+y1+")\\). Which function, in vertex form, describes the parabola?",
+      key, dis,
+      "Use the vertex form \\(y = a(x - p)^2 + q\\) with the given vertex, then substitute the known point to find \\(a\\):"+
+      "\\[ \\begin{aligned} "+y1+" &= a("+dx+")^2"+qTail+" \\\\ "+(y1-q)+" &= "+(d*d)+"a \\\\ a &= \\frac{"+(y1-q)+"}{"+(d*d)+"} = "+a+" \\end{aligned} \\]"+
+      "So the function is \\(y = "+u2VS(a,p,q)+"\\).",
+      {fam:fam, a:a, p:p, q:q, x1:x1, y1:y1});
+  }
+  var yi=a*p*p+q;
+  return mcq("A parabola has vertex \\(("+p+", "+q+")\\) and y-intercept \\("+yi+"\\). Which function, in vertex form, describes the parabola?",
+    key, dis,
+    "Use the vertex form \\(y = a(x - p)^2 + q\\) with the given vertex. The y-intercept is the value at \\(x = 0\\), so substitute the point \\((0, "+yi+")\\) to find \\(a\\):"+
+    "\\[ \\begin{aligned} "+yi+" &= a("+(0-p)+")^2"+qTail+" \\\\ "+(yi-q)+" &= "+(p*p)+"a \\\\ a &= \\frac{"+(yi-q)+"}{"+(p*p)+"} = "+a+" \\end{aligned} \\]"+
+    "So the function is \\(y = "+u2VS(a,p,q)+"\\).",
+    {fam:fam, a:a, p:p, q:q, yi:yi});
+});
+
+/* ---------- 4.46: write a quadratic model, with assumptions (L2, var) ---------- */
+E("u2-model-situation",2,["4.46"],2,"var",varset([
+  function(){
+    var v=pick([12,15,18,20]), h0=pick([1,2]);
+    return mcq("A ball is thrown upward from a platform "+h0+" m above the ground, with an initial velocity of "+v+" m/s. The height of the ball is modelled by a function of the form \\(h(t) = -4.9t^2 + v_0 t + h_0\\), where \\(t\\) is the time in seconds. Which function models this ball?",
+      "\\(h(t) = -4.9t^2 + "+v+"t + "+h0+"\\)",
+      ["\\(h(t) = -4.9t^2 + "+v+"t\\)",
+       "\\(h(t) = -4.9t^2 + "+h0+"t + "+v+"\\)",
+       "\\(h(t) = 4.9t^2 + "+v+"t + "+h0+"\\)"],
+      "In the template, \\(v_0\\) is the initial velocity, "+v+" m/s, and \\(h_0\\) is the starting height, "+h0+" m, so the model is \\(h(t) = -4.9t^2 + "+v+"t + "+h0+"\\). The model assumes the only force acting after the throw is gravity (the \\(-4.9\\) comes from half of \\(9.8\\ \\mathrm{m/s^2}\\)) and that air resistance is ignored.",
+      {ctx:"thrown ball", v:v, h0:h0});
+  },
+  function(){
+    var price=pick([30,40,50]), cut=pick([1,2]), base=pick([150,200,250]), gain=pick([5,10,15]);
+    return mcq("A gym has "+base+" members who each pay $"+price+" per month. For each $"+cut+" monthly discount the gym offers, "+gain+" new members join. Let \\(x\\) be the number of $"+cut+" discounts offered. Which function gives the monthly revenue \\(R\\), in dollars?",
+      "\\(R(x) = ("+price+" - "+cut+"x)("+base+" + "+gain+"x)\\)",
+      ["\\(R(x) = ("+price+" - "+cut+"x)("+base+" - "+gain+"x)\\)",
+       "\\(R(x) = ("+price+" + "+cut+"x)("+base+" + "+gain+"x)\\)",
+       "\\(R(x) = ("+price+" - x)("+base+" + x)\\)"],
+      "Revenue is price per member times the number of members. Each discount lowers the price by $"+cut+", so the price is \\("+price+" - "+cut+"x\\), and each discount adds "+gain+" members, so membership is \\("+base+" + "+gain+"x\\). Multiplying gives the model. It assumes the joining pattern stays linear, with the same "+gain+" new members for each further discount.",
+      {ctx:"gym membership", price:price, cut:cut, base:base, gain:gain});
+  },
+  function(){
+    var W=pick([40,48,60,80]);
+    return mcq("A farmer uses "+W+" m of fencing to enclose a rectangular pen on three sides, with a long barn wall forming the fourth side. The two sides perpendicular to the wall each have length \\(x\\) metres. Which function gives the area \\(A\\), in square metres, of the pen?",
+      "\\(A(x) = x("+W+" - 2x)\\)",
+      ["\\(A(x) = x("+W+" - x)\\)",
+       "\\(A(x) = 2x("+W+" - 2x)\\)",
+       "\\(A(x) = x("+(W/2)+" - x)\\)"],
+      "The fencing covers two sides of length \\(x\\) and the side opposite the wall, so that side has length \\("+W+" - 2x\\) metres. Area is length times width: \\(A(x) = x("+W+" - 2x)\\). The model assumes the barn wall is at least as long as the side opposite it and that the pen is rectangular.",
+      {ctx:"fenced pen", W:W});
+  },
+  function(){
+    var S=pick([20,24,30,36]);
+    return mcq("Two numbers add to "+S+". Let \\(x\\) be one of the numbers. Which function gives the product \\(P\\) of the two numbers?",
+      "\\(P(x) = x("+S+" - x)\\)",
+      ["\\(P(x) = x("+S+" + x)\\)",
+       "\\(P(x) = "+S+" - x^2\\)",
+       "\\(P(x) = x + ("+S+" - x)\\)"],
+      "If one number is \\(x\\) and the two add to "+S+", the other number is \\("+S+" - x\\). The product is one number times the other: \\(P(x) = x("+S+" - x)\\). No further assumption is needed; the only condition is that the two numbers add to "+S+".",
+      {ctx:"two numbers", S:S});
+  }
+]));
+
+/* ---------- 4.47: solve a problem by analyzing a quadratic (L2) ---------- */
+E("u2-analyze-problem",2,["4.47"],2,"gen",function(){
+  var fam=pick(["projectile","projectile","revenue","fence"]);
+  if(fam==="projectile"){
+    var ctxs=[
+      {n:"A ball is thrown upward from a rooftop", h0s:[10,12,15,18,20], vs:[10,20,30]},
+      {n:"A stone is tossed upward from the top of a cliff", h0s:[15,20,25,30], vs:[10,20,30]},
+      {n:"A ball is launched upward from a platform", h0s:[2,3,4,5], vs:[10,20]}];
+    var ctx=pick(ctxs), h0=pick(ctx.h0s), v=pick(ctx.vs);
+    var ts=v/10, mx=h0+v*v/20;
+    return numq(ctx.n+" "+h0+" m above the ground. Its height, in metres, after \\(t\\) seconds is modelled by \\(h(t) = -5t^2 + "+v+"t + "+h0+"\\). What is the <b>maximum height</b>, in metres, that the ball reaches?",
+      mx, 0.01,
+      "The height function is a downward-opening parabola, so its maximum is at the vertex. The time at the vertex is \\(t = \\frac{-b}{2a}\\):"+
+      "\\[ \\begin{aligned} t &= \\frac{-"+v+"}{2(-5)} = "+ts+" \\\\ h("+ts+") &= -5("+ts+")^2 + "+v+"("+ts+") + "+h0+" \\\\ &= "+u2JoinSigned([-5*ts*ts, v*ts, h0])+" \\\\ &= "+mx+" \\end{aligned} \\]"+
+      "So the maximum height is <b>"+mx+" m</b>, reached after "+ts+" s.",
+      {fam:fam, ctx:ctx.n, h0:h0, v:v});
+  }
+  if(fam==="revenue"){
+    var ctx=pick([{n:"A concert venue", item:"tickets"}, {n:"A community theatre", item:"tickets"}, {n:"A ski hill", item:"lift passes"}]);
+    var k=pick([10,20,25,50]), p0=pick([8,10,12,15,20]), xs=pick([2,3,4,5,6,8]);
+    var n0=k*(2*xs+p0), B=n0-k*p0, price=p0+xs;
+    return numq(ctx.n+" sells "+n0+" "+ctx.item+" at $"+p0+" each. For each $1 increase in price, "+k+" fewer "+ctx.item+" are sold. The revenue is modelled by \\(R(x) = ("+p0+" + x)("+n0+" - "+k+"x)\\), where \\(x\\) is the number of $1 increases. What ticket price, in dollars, gives the <b>maximum revenue</b>?",
+      price, 0.01,
+      "First expand the revenue function into standard form:"+
+      "\\[ \\begin{aligned} R(x) &= ("+p0+" + x)("+n0+" - "+k+"x) \\\\ &= -"+k+"x^2 + "+B+"x + "+(p0*n0)+" \\end{aligned} \\]"+
+      "This parabola opens downward, so its vertex gives the maximum. The vertex is at:"+
+      "\\[ \\begin{aligned} x &= \\frac{-"+B+"}{2(-"+k+")} = "+xs+" \\end{aligned} \\]"+
+      "That is "+xs+" increases of $1 on the starting price of $"+p0+", so the price that gives the maximum revenue is <b>$"+price+"</b>.",
+      {fam:fam, ctx:ctx.n, k:k, p0:p0, xs:xs, n0:n0});
+  }
+  var ctx2=pick([{n:"A farmer builds a rectangular pen against a long barn wall", Ws:[40,60,80,100,120]},
+                 {n:"A gardener makes a rectangular plot against a house wall", Ws:[40,60,80]},
+                 {n:"A school builds a rectangular garden plot against a gym wall", Ws:[40,60]}]);
+  var W=pick(ctx2.Ws), Amax=W*W/8;
+  return numq(ctx2.n+", using "+W+" m of fencing for the other three sides. The area is modelled by \\(A(x) = x("+W+" - 2x)\\), where \\(x\\) is the length, in metres, of each side perpendicular to the wall. What is the <b>maximum area</b>, in square metres, of the plot?",
+    Amax, 0.01,
+    "Expand the area function: \\(A(x) = -2x^2 + "+W+"x\\). This parabola opens downward, so the maximum is at the vertex:"+
+    "\\[ \\begin{aligned} x &= \\frac{-"+W+"}{2(-2)} = "+(W/4)+" \\\\ A("+(W/4)+") &= "+(W/4)+"\\left("+W+" - 2("+ (W/4) +")\\right) \\\\ &= "+(W/4)+" \\times "+(W/2)+" \\\\ &= "+Amax+" \\end{aligned} \\]"+
+    "So the maximum area is <b>"+Amax+" m<sup>2</sup></b>, when each perpendicular side is "+(W/4)+" m.",
+    {fam:fam, ctx:ctx2.n, W:W});
+});
+
+/* ---------- 4.44: diagnose and correct an error in completing the square (L3, error analysis) ---------- */
+E("u2-error-complete-square",2,["4.44"],3,"gen",function(){
+  var att=0, b=0, c=0, h=0, h2=0, q=0, type="";
+  while(att<200){
+    att++;
+    b=pick([2,4,6,8,10,-2,-4,-6,-8,-10]); h=b/2; h2=h*h;
+    c=ri(-9,12); if(c===0) continue;
+    q=c-h2; if(q===0) continue;
+    type=pick(["nosub","bsq","sign"]);
+    break;
+  }
+  var facS="(x"+(h>0?" + "+h:" - "+(-h))+")^2";
+  var correct="\\(y = "+u2VS(1,-h,q)+"\\)";
+  var flawed, flawNote;
+  if(type==="nosub"){
+    flawed="\\(y = "+u2VS(1,-h,c)+"\\)";
+    flawNote="The student added \\("+h2+"\\) to complete the square but never subtracted it back out, so their expression is worth \\("+h2+"\\) more than the original function. The balance has to be kept: the constant must fall from \\("+c+"\\) to \\("+c+" - "+h2+" = "+q+"\\).";
+  } else if(type==="bsq"){
+    flawed="\\(y = "+u2VS(1,-b,c-b*b)+"\\)";
+    flawNote="The student squared the whole coefficient of \\(x\\), using \\("+b+"^2 = "+(b*b)+"\\), instead of squaring half of it. The amount the pattern needs is the square of half the coefficient: \\(\\left(\\frac{"+b+"}{2}\\right)^2 = "+h2+"\\).";
+  } else {
+    flawed="\\(y = "+u2VS(1,h,q)+"\\)";
+    flawNote="The constant work is right, but the sign inside the squared bracket is wrong. Since \\(2 \\times ("+h+") = "+b+"\\), the trinomial \\("+u2QuadB(b)+" + "+h2+"\\) factors as \\("+facS+"\\), with the sign of \\("+h+"\\) following the coefficient of \\(x\\).";
+  }
+  var others={
+    nosub:"\\(y = "+u2VS(1,-h,c)+"\\)",
+    bsq:"\\(y = "+u2VS(1,-b,c-b*b)+"\\)",
+    sign:"\\(y = "+u2VS(1,h,q)+"\\)"
+  };
+  var dis=[flawed].concat(["nosub","bsq","sign"].filter(function(t){ return t!==type; }).map(function(t){ return others[t]; }));
+  return mcq("A student rewrote \\(y = "+u2Std(1,b,c)+"\\) in vertex form. Their final answer was \\("+flawed.slice(2,-2)+"\\), but it contains exactly one error. What is the <b>correct</b> vertex form?",
+    correct, dis,
+    flawNote+" Correct work:"+
+    "\\[ \\begin{aligned} y &= "+u2Std(1,b,c)+" \\\\ &= \\left("+u2QuadB(b)+" + "+h2+"\\right) + \\left("+u2JoinSigned([c,-h2])+"\\right) \\\\ &= "+u2VS(1,-h,q)+" \\end{aligned} \\]",
+    {b:b, c:c, type:type});
+});
+
+/* ---------- 4.39: generalize the vertex rule from examples (L3) ---------- */
+E("u2-vertex-rule",2,["4.39"],3,"gen",function(){
+  var exs=[], att=0;
+  while(exs.length<3 && att<400){
+    att++;
+    var p=ri(-6,6), q=ri(-6,6);
+    if(p===0 || q===0) continue;
+    if(exs.some(function(e){ return e.p===p && e.q===q; })) continue;
+    exs.push({p:p, q:q});
+  }
+  var P=0, Q=0; att=0;
+  while(att<400){
+    att++;
+    P=ri(-7,7); Q=ri(-7,7);
+    if(P===0 || Q===0) continue;
+    if(exs.some(function(e){ return e.p===P && e.q===Q; })) continue;
+    break;
+  }
+  var list=exs.map(function(e){ return "\\(y = "+u2VS(1,e.p,e.q)+"\\) has vertex \\(("+e.p+", "+e.q+")\\)"; }).join("; ");
+  return mcq("Three quadratic functions are listed with their vertices: "+list+". Following the pattern in these examples, what is the <b>vertex</b> of \\(y = "+u2VS(1,P,Q)+"\\)?",
+    u2Pair(P,Q), [u2Pair(-P,Q), u2Pair(P,-Q), u2Pair(-P,-Q)],
+    "Read the pattern across the examples. In each one, the x-coordinate of the vertex is the value that makes the squared part zero, which is the number subtracted from \\(x\\) inside the brackets, and the y-coordinate is the constant added at the end. Applying the same rule to \\(y = "+u2VS(1,P,Q)+"\\): the squared part is zero at \\(x = "+P+"\\) and the added constant is \\("+Q+"\\), so the vertex is \\(("+P+", "+Q+")\\).",
+    {P:P, Q:Q});
+});
+
+/* ---------- 4.47: evaluate a claim about a maximum (L3) ---------- */
+E("u2-evaluate-claim",2,["4.47"],3,"gen",function(){
+  var ctx=pick([
+    {n:"A theatre", item:"ticket prices"},
+    {n:"A concert hall", item:"ticket prices"},
+    {n:"A ski hill", item:"lift pass prices"},
+    {n:"A bus tour company", item:"ticket prices"}]);
+  var a=pick([2,5,10]);
+  var xs=ri(3,10), b=2*a*xs, c=pick([1500,2400,3000,4800]);
+  var M=a*xs*xs+c, xc=2*xs, Mc=c;
+  var d=pick([1,2,3]), x2=xs+d, M2=c+a*xs*xs-a*d*d;
+  function Rv(x){ return -a*x*x+b*x+c; }
+  var key="The claim is incorrect. The vertex is at \\(x = "+xs+"\\), so the greatest revenue is $"+M+".";
+  var dis=[
+    "The claim is correct. The vertex is at \\(x = "+xc+"\\), so the greatest revenue is $"+Mc+".",
+    "The claim is incorrect. The vertex is at \\(x = "+x2+"\\), so the greatest revenue is $"+M2+".",
+    "The claim is incorrect. The revenue has no maximum, because it keeps increasing as \\(x\\) increases."];
+  return mcq(ctx.n+" models its revenue, in dollars, by \\(R(x) = "+u2Std(-a,b,c)+"\\), where \\(x\\) is the number of one-dollar increases in its "+ctx.item+". The manager claims that the revenue is greatest after "+xc+" increases. Which statement evaluates the claim correctly?",
+    key, dis,
+    "The revenue graph opens downward, so its maximum is at the vertex:"+
+    "\\[ \\begin{aligned} x &= \\frac{-b}{2a} = \\frac{-"+b+"}{2("+(-a)+")} = "+xs+" \\\\ R("+xs+") &= "+u2JoinSigned([-a*xs*xs, b*xs, c])+" = "+M+" \\end{aligned} \\]"+
+    "So the greatest revenue is $"+M+", after "+xs+" increases, not "+xc+". The manager divided by the coefficient of \\(x^2\\) only once instead of twice (using \\(x = "+xc+"\\)); at that point the revenue has already fallen back to $"+Mc+", the same as with no increase at all. (Revenue values check: \\(R("+x2+") = "+Rv(x2)+"\\), also less than $"+M+".)",
+    {ctx:ctx.n, a:a, xs:xs, xc:xc});
+});
+
+/* ================= Unit 3: Quadratic Equations ================= */
+/* ================= Unit 3: Quadratic Equations (MA2200.3.14 to 3.17, 4.9 to 4.15) =================
+   Tranche 1, mid scope. All stems, contexts and values are original.
+   Helpers are prefixed u3; entries register through E(...). */
+
+/* ---------- u3 helpers ---------- */
+function u3Gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ var t=a%b; a=b; b=t; } return a||1; }
+function u3PolyS(cf){ /* coefficients, highest degree first, to a polynomial string in x */
+  var out="", first=true, n=cf.length-1, i, c, p, term;
+  for(i=0;i<cf.length;i++){ c=cf[i]; p=n-i; if(c===0) continue;
+    if(p===0) term=""+Math.abs(c);
+    else { var base=(p===1?"x":"x^"+p); term=(Math.abs(c)===1?base:Math.abs(c)+base); }
+    if(first){ out=(c<0?"-":"")+term; first=false; }
+    else out+=(c<0?" - ":" + ")+term;
+  }
+  return out===""?"0":out;
+}
+function u3QuadS(a,b,c){ return u3PolyS([a,b,c]); }
+function u3FacS(r){ /* factor (x - r) as a string, for a root r */
+  if(r===0) return "x";
+  return r>0?"(x - "+r+")":"(x + "+(-r)+")";
+}
+function u3FacLinS(p,q){ /* factor (px + q) as a string, p >= 1 */
+  if(q===0) return p===1?"x":"("+p+"x)";
+  var lead=(p===1?"x":p+"x");
+  return "("+lead+(q>0?" + "+q:" - "+(-q))+")";
+}
+function u3TwoFac(s1,s2){ /* two factor strings concatenated in a fixed (alphabetical) order */
+  return s1<=s2 ? s1+s2 : s2+s1;
+}
+function u3BinS(r){ /* binomial text for a root r: x - r, x + |r|, or x */
+  if(r===0) return "x";
+  return r>0?"x - "+r:"x + "+(-r);
+}
+function u3InnerS(coef,v,k){ /* inner linear expression: coef*v + k, coef >= 1 */
+  var s=(coef===1?v:coef+v);
+  if(k>0) s+=" + "+k; else if(k<0) s+=" - "+(-k);
+  return s;
+}
+function u3FracS(num,den){ /* reduced fraction as LaTeX content (no delimiters); den != 0 */
+  if(den<0){ num=-num; den=-den; }
+  var g=u3Gcd(num,den); num/=g; den/=g;
+  if(den===1) return ""+num;
+  return (num<0?"-":"")+"\\frac{"+Math.abs(num)+"}{"+den+"}";
+}
+function u3RadParts(n){ /* n = c^2 * m with m squarefree; returns [c, m] */
+  var c=1, m=n, i;
+  for(i=2;i*i<=m;i++){ while(m%(i*i)===0){ m/=(i*i); c*=i; } }
+  return [c,m];
+}
+function u3PairNum(a,b){ /* solution-set option for two integer roots, ascending */
+  var lo=Math.min(a,b), hi=Math.max(a,b);
+  return "\\(x = "+lo+" \\text{ or } x = "+hi+"\\)";
+}
+function u3Opts(key,cands){ /* first 3 candidate strings distinct from the key and each other */
+  var out=[], seen={}; seen[key]=1;
+  for(var i=0;i<cands.length;i++){ var s=String(cands[i]);
+    if(!seen[s]){ seen[s]=1; out.push(s); if(out.length===3) break; } }
+  return out;
+}
+function u3SignCands(r1,r2){ /* distractor solution-set options for integer roots r1, r2 */
+  return [ u3PairNum(-r1,-r2), u3PairNum(-r1,r2), u3PairNum(r1,-r2),
+           u3PairNum(r1+r2, r1*r2), u3PairNum(r1-1, r2), u3PairNum(r1, r2+1),
+           u3PairNum(r1+1, r2), u3PairNum(r1, r2-1), u3PairNum(r2-r1, r1+r2),
+           u3PairNum(r1-1, r2+1), u3PairNum(r1-2, r2), u3PairNum(r1, r2+2) ];
+}
+
+/* ---------- 3.14: factor out a common factor (L1) ---------- */
+E("u3-factor-common",3,["3.14"],1,"gen",function(){
+  var att=0, d, k, A2, A1, A0, inside, origP;
+  while(att<300){
+    att++;
+    d=ri(2,9); k=ri(1,2);
+    A2=pick([0,1,2,3,-2,-3]); A1=ri(-9,9);
+    A0=pick([-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9]);
+    var nz=(A2!==0?1:0)+(A1!==0?1:0)+1;
+    if(nz<2) continue;
+    if(u3Gcd(u3Gcd(A2,A1),A0)!==1) continue;
+    break;
+  }
+  inside={0:A0,1:A1,2:A2};
+  origP={}; Object.keys(inside).forEach(function(p){ origP[Number(p)+k]=d*inside[p]; });
+  function polyPS(P){ var ps=Object.keys(P).map(Number).sort(function(x,y){return y-x;});
+    var cf=ps.map(function(p){ return P[p]; });
+    /* rebuild with explicit degree so zero gaps are kept */
+    var top=ps[0], arr=[], i;
+    for(i=top;i>=0;i--) arr.push(P[i]||0);
+    return u3PolyS(arr);
+  }
+  var gcfS=d+"x"+(k>1?"^"+k:"");
+  var insideS=polyPS(inside);
+  var key=gcfS+"("+insideS+")";
+  var shifted={}; Object.keys(inside).forEach(function(p){ shifted[Number(p)+k]=inside[p]; });
+  var scaled={}; Object.keys(inside).forEach(function(p){ scaled[p]=d*inside[p]; });
+  var midFlip={0:A0,1:-A1,2:A2}, constFlip={0:-A0,1:A1,2:A2}, noConst={1:A1,2:A2};
+  var cands=[ d+"("+polyPS(shifted)+")",
+              gcfS+"("+polyPS(midFlip)+")",
+              gcfS+"("+polyPS(constFlip)+")",
+              "x^"+k+"("+polyPS(scaled)+")".replace("x^1","x"),
+              (d+1)+"x"+(k>1?"^"+k:"")+"("+insideS+")" ];
+  if(A1===0) cands.splice(1,1);
+  return mcq("Factor completely: \\("+polyPS(origP)+"\\)",
+    "\\("+key+"\\)",
+    u3Opts("\\("+key+"\\)", cands.map(function(s){ return "\\("+s+"\\)"; })),
+    "Every term of \\("+polyPS(origP)+"\\) is divisible by \\("+gcfS+"\\), and the remaining factor \\("+insideS+"\\) has no factor common to all of its terms:"+
+    "\\[ "+polyPS(origP)+" = "+key+" \\]"+
+    "So the complete factorization is <b>\\("+key+"\\)</b>.",
+    {d:d, k:k});
+});
+
+/* ---------- 4.9: roots, zeros and x-intercepts are the same numbers (L1) ---------- */
+E("u3-roots-zeros",3,["4.9"],1,"gen",function(){
+  var mode=pick(["given","intercepts","factored","factored","statement"]);
+  if(mode==="statement"){
+    return mcq("For a quadratic function \\(f\\) and the corresponding equation \\(f(x) = 0\\), which statement is correct?",
+      "The roots of the equation are exactly the zeros of the function, and both are the x-coordinates of the x-intercepts of the graph",
+      ["The roots of the equation are exactly the zeros of the function, and both are the y-coordinates of the y-intercept of the graph",
+       "The zeros of the function are the x-coordinates of the x-intercepts, and the roots of the equation are the coordinates of the vertex",
+       "The zeros of the function occur where the graph crosses the y-axis, and the roots are the values of the function at those points"],
+      "The three terms name the same numbers from three points of view. Solving \\(f(x) = 0\\) gives the <b>roots</b> of the equation; those input values are the <b>zeros</b> of the function; and on the graph they appear as the x-coordinates of the <b>x-intercepts</b>, the points where the graph crosses the x-axis.",
+      {mode:mode});
+  }
+  var r1=0, r2=0, att=0;
+  while(att<200){ att++; r1=ri(-6,6); r2=ri(-6,6);
+    if(r1!==0 && r2!==0 && r1!==r2 && r1+r2!==0) break; }
+  var lo=Math.min(r1,r2), hi=Math.max(r1,r2);
+  var a=pick([1,2,3]), b=-a*(r1+r2), c=a*r1*r2, Q=u3QuadS(a,b,c);
+  function andPair(x,y){ return "\\(x = "+x+"\\) and \\(x = "+y+"\\)"; }
+  function andPairN(x,y){ return andPair(Math.min(x,y), Math.max(x,y)); }
+  if(mode==="given"){
+    var key=andPairN(lo,hi);
+    var cands=[andPairN(-lo,-hi), andPairN(-lo,hi), andPairN(lo,-hi), andPairN(lo+hi, lo*hi)];
+    return mcq("The equation \\("+Q+" = 0\\) has solutions \\(x = "+lo+"\\) and \\(x = "+hi+"\\). What are the <b>zeros</b> of the function \\(f(x) = "+Q+"\\)?",
+      key, u3Opts(key,cands),
+      "The zeros of a function are the input values that make the output zero, so they are exactly the solutions of the equation \\(f(x) = 0\\). The zeros are <b>\\(x = "+lo+"\\)</b> and <b>\\(x = "+hi+"\\)</b>.",
+      {mode:mode, a:a});
+  }
+  if(mode==="intercepts"){
+    var key2=andPairN(lo,hi);
+    var cands2=[andPairN(-lo,-hi), andPairN(-lo,hi), andPairN(lo,-hi), andPairN(lo+hi, lo*hi)];
+    return mcq("The graph of the function \\(f(x) = "+Q+"\\) crosses the x-axis at \\(("+lo+", 0)\\) and \\(("+hi+", 0)\\). What are the <b>solutions</b> of the equation \\("+Q+" = 0\\)?",
+      key2, u3Opts(key2,cands2),
+      "An x-intercept is a point where the function value is zero, so its x-coordinate is a solution of \\(f(x) = 0\\). The solutions are <b>\\(x = "+lo+"\\)</b> and <b>\\(x = "+hi+"\\)</b>.",
+      {mode:mode, a:a});
+  }
+  /* factored */
+  var fS="\\(f(x) = "+(a===1?"":a)+u3FacS(r1)+u3FacS(r2)+"\\)";
+  function ptPair(x,y){ return "\\(("+x+", 0)\\) and \\(("+y+", 0)\\)"; }
+  function ptPairN(x,y){ return ptPair(Math.min(x,y), Math.max(x,y)); }
+  var key3=ptPairN(lo,hi);
+  var cands3=[ptPairN(-lo,-hi), ptPairN(-lo,hi), ptPairN(lo,-hi),
+              "\\((0, "+lo+")\\) and \\((0, "+hi+")\\)"];
+  return mcq("Given "+fS+", what are the <b>x-intercepts</b> of the graph of \\(f\\)?",
+    key3, u3Opts(key3,cands3),
+    "The product "+(a===1?"":a)+u3FacS(r1)+u3FacS(r2)+" is zero when one of its factors is zero: \\("+u3BinS(r1)+" = 0\\) gives \\(x = "+r1+"\\), and \\("+u3BinS(r2)+" = 0\\) gives \\(x = "+r2+"\\). So the graph crosses the x-axis at <b>\\(("+lo+", 0)\\)</b> and <b>\\(("+hi+", 0)\\)</b>.",
+    {mode:mode, a:a});
+});
+
+/* ---------- 3.15: factor trinomials and differences of squares (L2) ---------- */
+E("u3-factor-trinomial",3,["3.15"],2,"gen",function(){
+  var fam=pick(["monic","nonmonic","diffsq"]);
+  if(fam==="monic"){
+    var r1=ri(-9,9), r2=ri(-9,9), att=0;
+    while(att<200 && (r1===0 || r2===0)){ att++; r1=ri(-9,9); r2=ri(-9,9); }
+    var b=-(r1+r2), c=r1*r2;
+    var key=u3TwoFac(u3FacS(r1), u3FacS(r2));
+    function expM(x,y){ return [1, -(x+y), x*y]; }
+    var candRoots=[[-r1,r2],[r1,-r2],[-r1,-r2],[r1+1,r2-1],[r1-1,r2+1],[r1+2,r2],[r1,r2+2]];
+    var cands=[];
+    candRoots.forEach(function(pr){ var e=expM(pr[0],pr[1]);
+      if(e[1]!==b || e[2]!==c) cands.push(u3TwoFac(u3FacS(pr[0]), u3FacS(pr[1]))); });
+    return mcq("Factor: \\("+u3QuadS(1,b,c)+"\\)",
+      "\\("+key+"\\)", u3Opts("\\("+key+"\\)", cands.map(function(s){ return "\\("+s+"\\)"; })),
+      "Look for two numbers with product \\("+c+"\\) and sum \\("+b+"\\): the numbers are \\("+(-r1)+"\\) and \\("+(-r2)+"\\), since \\(("+(-r1)+") \\times ("+(-r2)+") = "+c+"\\) and \\(("+(-r1)+") + ("+(-r2)+") = "+b+"\\)."+
+      "\\[ "+u3QuadS(1,b,c)+" = "+key+" \\]"+
+      "So the factorization is <b>\\("+key+"\\)</b>.",
+      {fam:fam});
+  }
+  if(fam==="nonmonic"){
+    var att2=0, p,q,r,s,a2,b2,c2,key2;
+    while(att2<300){
+      att2++;
+      p=pick([1,2,3]); r=pick([1,2,3]); q=ri(-6,6); s=ri(-6,6);
+      if(q===0 || s===0) continue;
+      a2=p*r; b2=p*s+q*r; c2=q*s;
+      if(a2<2) continue;
+      key2=u3TwoFac(u3FacLinS(p,q), u3FacLinS(r,s));
+      break;
+    }
+    function expN(p1,q1,p2,q2){ return [p1*p2, p1*q2+q1*p2, q1*q2]; }
+    var specs=[[p,-q,r,s],[p,q,r,-s],[p,-q,r,-s],[p,s,r,q],[r,q,p,s],[p,q+1,r,s],[p,q,r,s+1]];
+    var cands2=[];
+    specs.forEach(function(sp){ var e=expN(sp[0],sp[1],sp[2],sp[3]);
+      if(e[0]!==a2 || e[1]!==b2 || e[2]!==c2)
+        cands2.push(u3TwoFac(u3FacLinS(sp[0],sp[1]), u3FacLinS(sp[2],sp[3]))); });
+    function xTerm(co){ if(co===0) return ""; var t=(Math.abs(co)===1?"x":Math.abs(co)+"x"); return (co<0?" - ":" + ")+t; }
+    function cTerm(co){ if(co===0) return ""; return (co<0?" - "+(-co):" + "+co); }
+    var expLine=a2+"x^2"+xTerm(p*s)+xTerm(q*r)+cTerm(q*s);
+    return mcq("Factor: \\("+u3QuadS(a2,b2,c2)+"\\)",
+      "\\("+key2+"\\)", u3Opts("\\("+key2+"\\)", cands2.map(function(s2){ return "\\("+s2+"\\)"; })),
+      "The factor pair "+key2+" can be checked by expanding:"+
+      "\\[ \\begin{aligned} "+key2+" &= "+expLine+" \\\\ &= "+u3QuadS(a2,b2,c2)+" \\end{aligned} \\]"+
+      "which matches the given trinomial, so the factorization is <b>\\("+key2+"\\)</b>.",
+      {fam:fam});
+  }
+  /* difference of squares */
+  var A=ri(2,9), B=ri(2,9), twoVar=Math.random()<0.5;
+  var stemExpr, key3, cands3;
+  if(twoVar){
+    stemExpr=(A*A)+"x^2 - "+(B*B)+"y^2";
+    key3="("+A+"x - "+B+"y)("+A+"x + "+B+"y)";
+    cands3=[ "("+A+"x - "+B+"y)("+A+"x - "+B+"y)",
+             "("+A+"x + "+B+"y)("+A+"x + "+B+"y)",
+             "("+(A*A)+"x - "+(B*B)+"y)("+(A*A)+"x + "+(B*B)+"y)",
+             "("+A+"x - "+(B*B)+"y)("+A+"x + "+(B*B)+"y)" ];
+  } else {
+    stemExpr=(A*A)+"x^2 - "+(B*B);
+    key3="("+A+"x - "+B+")("+A+"x + "+B+")";
+    cands3=[ "("+A+"x - "+B+")("+A+"x - "+B+")",
+             "("+A+"x + "+B+")("+A+"x + "+B+")",
+             "("+(A*A)+"x - "+(B*B)+")("+(A*A)+"x + "+(B*B)+")",
+             "("+A+"x - "+(B*B)+")("+A+"x + "+(B*B)+")" ];
+  }
+  return mcq("Factor: \\("+stemExpr+"\\)",
+    "\\("+key3+"\\)", u3Opts("\\("+key3+"\\)", cands3.map(function(s3){ return "\\("+s3+"\\)"; })),
+    "Each term is a perfect square: \\("+(A*A)+(twoVar?"x^2":"x^2")+" = ("+A+(twoVar?"x":"x")+")^2\\) and \\("+(B*B)+(twoVar?"y^2":"")+" = ("+B+(twoVar?"y":"")+")^2\\). A difference of squares factors as \\(u^2 - v^2 = (u - v)(u + v)\\):"+
+    "\\[ "+stemExpr+" = "+key3+" \\]"+
+    "So the factorization is <b>\\("+key3+"\\)</b>.",
+    {fam:fam});
+});
+
+/* ---------- 3.16: is a binomial a factor? Use the factor theorem (L2) ---------- */
+E("u3-factor-test",3,["3.16"],2,"gen",function(){
+  var isFac=Math.random()<0.5;
+  var k=ri(-6,6); if(k===0) k=3;
+  var al=pick([1,2,3]), be=ri(-6,6);
+  /* base = (x - k)(al x + be); P(k) = r0 */
+  var a=al, b=be-al*k, c=-be*k;
+  var r0=0;
+  if(!isFac){ r0=pick([-5,-4,-3,-2,-1,1,2,3,4,5]); c+=r0; }
+  var P=u3QuadS(a,b,c), val=a*k*k+b*k+c;
+  var wk1=pick([1,2,3,4,6]), wk2=pick([-6,-4,-3,-2,-1,1,2,3,4,6]);
+  if(wk2===val || wk2===0) wk2=val+3;
+  var key, cands;
+  if(isFac){
+    key="Yes, because \\(P("+k+") = 0\\)";
+    cands=["No, because \\(P("+k+") = 0\\)",
+           "Yes, because \\(P("+k+") = "+wk1+"\\)",
+           "No, because \\(P("+k+") = "+wk2+"\\)"];
+  } else {
+    key="No, because \\(P("+k+") = "+val+"\\)";
+    cands=["Yes, because \\(P("+k+") = 0\\)",
+           "Yes, because \\(P("+k+") = "+val+"\\)",
+           "No, because \\(P("+k+") = "+wk2+"\\)"];
+  }
+  return mcq("Let \\(P(x) = "+P+"\\). Is \\("+u3BinS(k)+"\\) a factor of \\(P(x)\\)?",
+    key, cands,
+    "By the factor theorem, \\("+u3BinS(k)+"\\) is a factor of \\(P(x)\\) exactly when \\(P("+k+") = 0\\). Evaluate:"+
+    "\\[ \\begin{aligned} P("+k+") &= "+a+"("+k+")^2 "+(b<0?"- "+(-b):"+ "+b)+"("+k+") "+(c<0?"- "+(-c):"+ "+c)+" \\\\ &= "+val+" \\end{aligned} \\]"+
+    (isFac ? "Since \\(P("+k+") = 0\\), the remainder on division by \\("+u3BinS(k)+"\\) is zero, so <b>yes</b>, \\("+u3BinS(k)+"\\) is a factor."
+           : "Since \\(P("+k+") = "+val+" \\ne 0\\), division by \\("+u3BinS(k)+"\\) leaves a remainder of \\("+val+"\\), so <b>no</b>, \\("+u3BinS(k)+"\\) is not a factor."),
+    {k:k, val:val});
+});
+
+/* ---------- 3.17: factor a difference of squares with function expressions (L2) ---------- */
+E("u3-factor-func-diff",3,["3.17"],2,"gen",function(){
+  var fam=pick(["xy","xx","mix"]);
+  var A=ri(2,9), B=ri(2,9), p=ri(-5,5), q=ri(-5,5);
+  if(fam==="xx" && p===q) q=q+2;
+  var innerX, innerY;
+  if(fam==="xy"){ innerX=u3InnerS(1,"x",p); innerY=u3InnerS(1,"y",q); }
+  else if(fam==="xx"){ innerX=u3InnerS(1,"x",p); innerY=u3InnerS(1,"x",q); }
+  else { innerX=u3InnerS(2,"x",p); innerY=u3InnerS(1,"y",q); }
+  var bigX=A+"("+innerX+")", bigY=B+"("+innerY+")";
+  var stemExpr=(A*A)+"("+innerX+")^2 - "+(B*B)+"("+innerY+")^2";
+  var key="("+bigX+" - "+bigY+")("+bigX+" + "+bigY+")";
+  var bigX2=(A*A)+"("+innerX+")", bigY2=(B*B)+"("+innerY+")";
+  var cands=[ "("+bigX+" - "+bigY+")("+bigX+" - "+bigY+")",
+              "("+bigX+" + "+bigY+")("+bigX+" + "+bigY+")",
+              "("+bigX2+" - "+bigY2+")("+bigX2+" + "+bigY2+")",
+              "("+bigX+" - "+bigY2+")("+bigX+" + "+bigY2+")" ];
+  return mcq("Factor: \\("+stemExpr+"\\)",
+    "\\("+key+"\\)", u3Opts("\\("+key+"\\)", cands.map(function(s){ return "\\("+s+"\\)"; })),
+    "The expression is a difference of squares, \\(\\left("+bigX+"\\right)^2 - \\left("+bigY+"\\right)^2\\), where the two squared parts are \\("+bigX+"\\) and \\("+bigY+"\\). Using \\(u^2 - v^2 = (u - v)(u + v)\\):"+
+    "\\[ "+stemExpr+" = "+key+" \\]"+
+    "So the factorization is <b>\\("+key+"\\)</b>.",
+    {fam:fam});
+});
+
+/* ---------- 4.10: solve a quadratic equation (L2) ---------- */
+E("u3-solve-strategies",3,["4.10"],2,"gen",function(){
+  var fam=pick(["sqroot","sqroot","factor","formula","cts"]);
+  if(fam==="sqroot"){
+    var h=ri(-6,6); if(h===0) h=4;
+    var radical=Math.random()<0.45, K, s, rp;
+    if(radical){ var mm=pick([2,3,5,6,7]); s=pick([1,2]); K=s*s*mm; rp=[s,mm]; }
+    else { s=ri(2,7); K=s*s; rp=[s,1]; }
+    var inner=u3InnerS(1,"x",-h);
+    var eqStr="("+inner+")^2 = "+K;
+    function radRoot(sign){ /* h + sign * s*sqrt(mm) as a string */
+      var coef=rp[0], mm2=rp[1];
+      if(mm2===1) return ""+(h+sign*coef);
+      var term=(coef===1?"\\sqrt{"+mm2+"}":coef+"\\sqrt{"+mm2+"}");
+      if(h===0) return (sign<0?"-":"")+term;
+      return h+(sign<0?" - ":" + ")+term;
+    }
+    var loS=radRoot(-1), hiS=radRoot(1);
+    var key="\\(x = "+loS+" \\text{ or } x = "+hiS+"\\)";
+    function radRootH(hh, sign){
+      var coef=rp[0], mm2=rp[1];
+      if(mm2===1) return ""+(hh+sign*coef);
+      var term=(coef===1?"\\sqrt{"+mm2+"}":coef+"\\sqrt{"+mm2+"}");
+      if(hh===0) return (sign<0?"-":"")+term;
+      return hh+(sign<0?" - ":" + ")+term;
+    }
+    var cands=[ "\\(x = "+radRootH(-h,-1)+" \\text{ or } x = "+radRootH(-h,1)+"\\)",
+                "\\(x = "+radRootH(0,-1)+" \\text{ or } x = "+radRootH(0,1)+"\\)" ];
+    if(rp[1]===1) cands.push("\\(x = "+(h-s*s)+" \\text{ or } x = "+(h+s*s)+"\\)");
+    else if(rp[0]===1) cands.push("\\(x = "+h+" - 2\\sqrt{"+rp[1]+"} \\text{ or } x = "+h+" + 2\\sqrt{"+rp[1]+"}\\)");
+    else cands.push("\\(x = "+h+" - "+(rp[0]*rp[1])+"\\sqrt{"+rp[0]+"} \\text{ or } x = "+h+" + "+(rp[0]*rp[1])+"\\sqrt{"+rp[0]+"}\\)");
+    var sqrtK=(rp[1]===1? ""+rp[0] : (rp[0]===1?"\\sqrt{"+rp[1]+"}":rp[0]+"\\sqrt{"+rp[1]+"}"));
+    return mcq("Solve: \\("+eqStr+"\\)",
+      key, u3Opts(key,cands),
+      "Take the square root of both sides, keeping both the positive and negative roots:"+
+      "\\[ \\begin{aligned} ("+inner+")^2 &= "+K+" \\\\ "+inner+" &= \\pm "+sqrtK+" \\\\ x &= "+h+" \\pm "+sqrtK+" \\end{aligned} \\]"+
+      "So the solutions are <b>\\(x = "+loS+"\\)</b> and <b>\\(x = "+hiS+"\\)</b>.",
+      {fam:fam});
+  }
+  if(fam==="factor" || fam==="formula"){
+    var a2=(fam==="factor") ? pick([1,2]) : pick([2,3,4]);
+    var r1=ri(-8,8), r2=ri(-8,8), att=0;
+    while(att<200 && r1===r2){ att++; r2=ri(-8,8); }
+    var b2=-a2*(r1+r2), c2=a2*r1*r2, Q=u3QuadS(a2,b2,c2);
+    var key2=u3PairNum(r1,r2);
+    var sol;
+    if(fam==="factor"){
+      sol="Factor the left side and set each factor equal to zero:"+
+        "\\[ \\begin{aligned} "+Q+" &= 0 \\\\ "+(a2===1?"":a2)+u3FacS(r1)+u3FacS(r2)+" &= 0 \\end{aligned} \\]"+
+        "So \\("+u3BinS(r1)+" = 0\\) or \\("+u3BinS(r2)+" = 0\\), giving <b>\\(x = "+r1+"\\)</b> or <b>\\(x = "+r2+"\\)</b>.";
+    } else {
+      var D=b2*b2-4*a2*c2, sD=Math.round(Math.sqrt(D));
+      sol="Apply the quadratic formula with \\(a = "+a2+"\\), \\(b = "+b2+"\\) and \\(c = "+c2+"\\):"+
+        "\\[ \\begin{aligned} x &= \\frac{-("+b2+") \\pm \\sqrt{("+b2+")^2 - 4("+a2+")("+c2+")}}{2("+a2+")} \\\\ &= \\frac{"+(-b2)+" \\pm "+sD+"}{"+(2*a2)+"} \\end{aligned} \\]"+
+        "So the solutions are <b>\\(x = "+r1+"\\)</b> and <b>\\(x = "+r2+"\\)</b>.";
+    }
+    return mcq("Solve: \\("+Q+" = 0\\)",
+      key2, u3Opts(key2, u3SignCands(r1,r2)), sol, {fam:fam});
+  }
+  /* completing the square, presented in the solution */
+  var t1=ri(-8,8), t2=ri(-8,8), att3=0;
+  while(att3<300){ att3++; t1=ri(-8,8); t2=ri(-8,8);
+    if(t1!==t2 && ((t1+t2)%2===0)) break; }
+  var B=-(t1+t2), C=t1*t2, m=B/2, s2=Math.abs(t2-t1)/2;
+  var key3=u3PairNum(t1,t2);
+  return mcq("Solve: \\("+u3QuadS(1,B,C)+" = 0\\)",
+    key3, u3Opts(key3, u3SignCands(t1,t2)),
+    "Complete the square. Move the constant, then add \\(\\left(\\frac{"+B+"}{2}\\right)^2 = "+(m*m)+"\\) to both sides:"+
+    "\\[ \\begin{aligned} x^2 "+(B<0?"- "+(-B):"+ "+B)+"x &= "+(-C)+" \\\\ x^2 "+(B<0?"- "+(-B):"+ "+B)+"x + "+(m*m)+" &= "+(-C)+" + "+(m*m)+" \\\\ (x "+(m<0?"- "+(-m):"+ "+m)+")^2 &= "+(s2*s2)+" \\\\ x "+(m<0?"- "+(-m):"+ "+m)+" &= \\pm "+s2+" \\end{aligned} \\]"+
+    "So the solutions are <b>\\(x = "+t1+"\\)</b> and <b>\\(x = "+t2+"\\)</b>.",
+    {fam:fam});
+});
+
+/* ---------- 4.14: discriminant and the nature of the roots (L2) ---------- */
+E("u3-discriminant-nature",3,["4.14"],2,"gen",function(){
+  var N={two:"two distinct real roots", rep:"one repeated real root", none:"no real roots"};
+  var G={two:"crosses the x-axis at two points", rep:"touches the x-axis at exactly one point", none:"does not cross the x-axis"};
+  if(Math.random()<0.3){
+    var facts=[ ["The graph of a quadratic function crosses the x-axis at two points","two"],
+                ["The graph of a quadratic function touches the x-axis at exactly one point","rep"],
+                ["The graph of a quadratic function does not cross the x-axis","none"],
+                ["A quadratic equation has two distinct real roots","two"],
+                ["A quadratic equation has no real roots","none"],
+                ["A quadratic equation has one repeated real root","rep"] ];
+    var f=pick(facts), ck=f[1];
+    var keyS="\\(b^2 - 4ac "+(ck==="two"?">":ck==="rep"?"=":"<")+" 0\\)";
+    var others=[">","=","<"].filter(function(sy){ return sy!==(ck==="two"?">":ck==="rep"?"=":"<"); });
+    var cands=["\\(b^2 - 4ac "+others[0]+" 0\\)", "\\(b^2 - 4ac "+others[1]+" 0\\)",
+               "It cannot be determined from this information"];
+    return mcq(f[0]+". What is the sign of the discriminant \\(b^2 - 4ac\\) of the corresponding equation?",
+      keyS, cands,
+      "The discriminant determines the number of real roots: positive means two distinct real roots and two x-intercepts, zero means one repeated root and one touching point, and negative means no real roots and no x-intercepts. Here the discriminant is <b>"+(ck==="two"?"positive":ck==="rep"?"zero":"negative")+"</b>, so <b>"+keyS.replace("\\(","").replace("\\)","")+"</b>.",
+      {mode:"fact"});
+  }
+  var which=pick(["two-square","two-nonsquare","repeated","none"]);
+  var a,b,c,D;
+  if(which==="two-square"){
+    a=pick([1,2]); var r1=ri(-7,7), r2=ri(-7,7), att=0;
+    while(att<200 && r1===r2){ att++; r2=ri(-7,7); }
+    b=-a*(r1+r2); c=a*r1*r2; D=b*b-4*a*c;
+  } else if(which==="repeated"){
+    a=pick([1,2,3]); var r=ri(-6,6); b=-2*a*r; c=a*r*r; D=0;
+  } else {
+    var att2=0;
+    while(att2<500){ att2++; a=ri(1,3); b=ri(-10,10); c=ri(-10,10); D=b*b-4*a*c;
+      if(which==="none" && D<0) break;
+      if(which==="two-nonsquare" && D>0 && u3RadParts(D)[1]>1) break; }
+  }
+  var ck2=(which==="repeated")?"rep":(which==="none")?"none":"two";
+  var wIdx=pick(["two","rep","none"].filter(function(x){ return x!==ck2; }));
+  function stmt(n,g){ return "The equation has "+N[n]+", and the graph of the corresponding function "+G[g]; }
+  var key4=stmt(ck2,ck2);
+  var cands4=[stmt(ck2,wIdx), stmt(wIdx,ck2), stmt(wIdx,wIdx)];
+  return mcq("For the equation \\("+u3QuadS(a,b,c)+" = 0\\), which statement is correct?",
+    key4, cands4,
+    "Compute the discriminant:"+
+    "\\[ \\begin{aligned} b^2 - 4ac &= ("+b+")^2 - 4("+a+")("+c+") \\\\ &= "+D+" \\end{aligned} \\]"+
+    (ck2==="two" ? "The discriminant is positive, so there are <b>two distinct real roots</b>, and the graph crosses the x-axis at two points."
+      : ck2==="rep" ? "The discriminant is zero, so there is <b>one repeated real root</b>, and the graph touches the x-axis at exactly one point."
+      : "The discriminant is negative, so there are <b>no real roots</b>, and the graph does not cross the x-axis."),
+    {mode:"equation", D:D});
+});
+
+/* ---------- 4.14: find k from a discriminant condition (L2) ---------- */
+E("u3-discriminant-k",3,["4.14"],2,"gen",function(){
+  var mode=pick(["constK","constK","linK","leadK","givenD"]);
+  if(mode==="constK"){
+    var pr=pick([[1,4],[1,6],[1,8],[1,10],[1,12],[1,-6],[1,-8],[1,-10],
+                 [4,4],[4,8],[4,12],[4,16],[4,-8],[2,4],[2,8],[2,12],[2,-8]]);
+    var A=pr[0], B=pr[1], kv=(B*B)/(4*A);
+    return numq("The equation \\("+A+"x^2 "+(B<0?"- "+(-B):"+ "+B)+"x + k = 0\\) has exactly one repeated real root. What is the value of \\(k\\)?",
+      kv, 0.001,
+      "A repeated root occurs exactly when the discriminant is zero:"+
+      "\\[ \\begin{aligned} b^2 - 4ac &= 0 \\\\ ("+B+")^2 - 4("+A+")k &= 0 \\\\ "+(B*B)+" &= "+(4*A)+"k \\\\ k &= "+kv+" \\end{aligned} \\]"+
+      "So <b>\\(k = "+kv+"\\)</b>.",
+      {mode:mode});
+  }
+  if(mode==="linK"){
+    var m=ri(2,9), C=m*m, kv2=2*m;
+    return numq("The equation \\(x^2 + kx + "+C+" = 0\\) has two equal real roots. What is the positive value of \\(k\\)?",
+      kv2, 0.001,
+      "Equal roots require a discriminant of zero:"+
+      "\\[ \\begin{aligned} b^2 - 4ac &= 0 \\\\ k^2 - 4(1)("+C+") &= 0 \\\\ k^2 &= "+(4*C)+" \\\\ k &= \\pm "+kv2+" \\end{aligned} \\]"+
+      "The positive value is <b>\\(k = "+kv2+"\\)</b>.",
+      {mode:mode});
+  }
+  if(mode==="leadK"){
+    var pr2=pick([[2,1],[4,1],[6,1],[4,4],[8,4],[12,4],[6,9],[12,9],[-6,1],[-8,4]]);
+    var B2=pr2[0], C2=pr2[1], kv3=(B2*B2)/(4*C2);
+    return numq("The equation \\(kx^2 "+(B2<0?"- "+(-B2):"+ "+B2)+"x + "+C2+" = 0\\) has exactly one repeated real root. What is the value of \\(k\\)?",
+      kv3, 0.001,
+      "Set the discriminant equal to zero:"+
+      "\\[ \\begin{aligned} b^2 - 4ac &= 0 \\\\ ("+B2+")^2 - 4(k)("+C2+") &= 0 \\\\ "+(B2*B2)+" &= "+(4*C2)+"k \\\\ k &= "+kv3+" \\end{aligned} \\]"+
+      "So <b>\\(k = "+kv3+"\\)</b>.",
+      {mode:mode});
+  }
+  /* givenD: a discriminant value is given, one coefficient is missing */
+  if(Math.random()<0.5){
+    var B3=ri(-10,10), c0=ri(-12,12), D0=B3*B3-4*c0;
+    return numq("The discriminant of \\(x^2 "+(B3<0?"- "+(-B3):"+ "+B3)+"x + c = 0\\) is "+D0+". What is the value of \\(c\\)?",
+      c0, 0.001,
+      "Substitute into the discriminant formula and solve for \\(c\\):"+
+      "\\[ \\begin{aligned} b^2 - 4ac &= "+D0+" \\\\ ("+B3+")^2 - 4(1)c &= "+D0+" \\\\ "+(B3*B3)+" - 4c &= "+D0+" \\\\ c &= "+c0+" \\end{aligned} \\]"+
+      "So <b>\\(c = "+c0+"\\)</b>.",
+      {mode:mode});
+  }
+  var b0=ri(2,10), C3=ri(-8,12), D3=b0*b0-4*C3;
+  return numq("The discriminant of \\(x^2 + bx "+(C3<0?"- "+(-C3):"+ "+C3)+" = 0\\) is "+D3+", and \\(b > 0\\). What is the value of \\(b\\)?",
+    b0, 0.001,
+    "Substitute into the discriminant formula and solve for \\(b\\):"+
+    "\\[ \\begin{aligned} b^2 - 4ac &= "+D3+" \\\\ b^2 - 4(1)("+C3+") &= "+D3+" \\\\ b^2 &= "+(b0*b0)+" \\\\ b &= "+b0+" \\end{aligned} \\]"+
+    "Taking the positive value, <b>\\(b = "+b0+"\\)</b>.",
+    {mode:mode});
+});
+
+/* ---------- 4.15: model a problem with a quadratic equation and solve it (L2) ---------- */
+E("u3-problem-model",3,["4.15"],2,"gen",function(){
+  var ctx=pick(["rect","projectile","consecutive","frame"]);
+  if(ctx==="rect"){
+    var w=ri(4,15), d=ri(2,7), A=w*(w+d);
+    return numq("A rectangular garden is "+d+" m longer than it is wide, and its area is "+A+" m². What is the width of the garden, in metres?",
+      w, 0.001,
+      "Let the width be \\(w\\) metres, so the length is \\(w + "+d+"\\) metres. Area gives:"+
+      "\\[ \\begin{aligned} w(w + "+d+") &= "+A+" \\\\ w^2 + "+d+"w - "+A+" &= 0 \\\\ (w - "+w+")(w + "+(w+d)+") &= 0 \\end{aligned} \\]"+
+      "So \\(w = "+w+"\\) or \\(w = "+(-(w+d))+"\\). A width cannot be negative, so the width is <b>"+w+" m</b>.",
+      {ctx:"rect", w:w, d:d});
+  }
+  if(ctx==="projectile"){
+    var T=pick([2,3,4]);
+    var v=pick(T===2?[5]:(T===3?[5,10]:[5,10,15]));
+    var h0=T*(5*T-v), Dv=(10*T-v)*(10*T-v), sD=10*T-v;
+    var surface=(h0>=40)?"the top of a cliff":"a platform";
+    return numq("A ball is thrown upward from "+surface+" "+h0+" m above the ground, with an initial speed of "+v+" m/s. Its height above the ground, in metres, after \\(t\\) seconds is \\(h(t) = -5t^2 + "+v+"t + "+h0+"\\). How long does it take for the ball to reach the ground, in seconds?",
+      T, 0.001,
+      "The ball reaches the ground when \\(h(t) = 0\\). Apply the quadratic formula:"+
+      "\\[ \\begin{aligned} -5t^2 + "+v+"t + "+h0+" &= 0 \\\\ t &= \\frac{-"+v+" \\pm \\sqrt{"+v+"^2 - 4(-5)("+h0+")}}{2(-5)} \\\\ &= \\frac{-"+v+" \\pm "+sD+"}{-10} \\end{aligned} \\]"+
+      "The two values are \\(t = "+T+"\\) and \\(t = "+fmt((v-5*T)/5,2)+"\\). Time cannot be negative, so the ball reaches the ground after <b>"+T+" s</b>.",
+      {ctx:"projectile", T:T, v:v, h0:h0, surface:surface});
+  }
+  if(ctx==="consecutive"){
+    var kind=pick(["plain","even","odd"]);
+    var step=(kind==="plain")?1:2, n;
+    if(kind==="plain") n=ri(6,20);
+    else if(kind==="even") n=2*ri(3,12);
+    else n=2*ri(2,11)+1;
+    var P=n*(n+step);
+    var label=(kind==="plain")?"consecutive positive integers":(kind==="even")?"consecutive positive even integers":"consecutive positive odd integers";
+    var stepW=(kind==="plain")?"n + 1":"n + 2";
+    return numq("The product of two "+label+" is "+P+". What is the smaller of the two numbers?",
+      n, 0.001,
+      "Let the smaller number be \\(n\\); the next one is \\("+stepW+"\\). Their product gives:"+
+      "\\[ \\begin{aligned} n("+stepW+") &= "+P+" \\\\ n^2 + "+step+"n - "+P+" &= 0 \\\\ (n - "+n+")(n + "+(n+step)+") &= 0 \\end{aligned} \\]"+
+      "So \\(n = "+n+"\\) or \\(n = "+(-(n+step))+"\\). The numbers are positive, so the smaller number is <b>"+n+"</b>.",
+      {ctx:"consecutive", kind:kind, n:n, step:step});
+  }
+  /* frame */
+  var dims=pick([[24,18],[30,20],[25,20],[40,30],[36,24],[20,16]]);
+  var W=dims[0], H=dims[1], x=ri(2,5);
+  var TOT=(W+2*x)*(H+2*x), S=W+H, sD2=2*(S+4*x);
+  return numq("A photograph "+W+" cm by "+H+" cm is mounted in a frame with a border of uniform width. The total area of the photograph and the frame together is "+TOT+" cm². What is the width of the border, in centimetres?",
+    x, 0.001,
+    "Let the border width be \\(x\\) cm. The outer dimensions are \\(("+W+" + 2x)\\) cm by \\(("+H+" + 2x)\\) cm, so:"+
+    "\\[ \\begin{aligned} ("+W+" + 2x)("+H+" + 2x) &= "+TOT+" \\\\ 4x^2 + "+(2*S)+"x "+((W*H-TOT)<0?"- "+(TOT-W*H):"+ "+(W*H-TOT))+" &= 0 \\\\ x &= \\frac{-"+(2*S)+" \\pm \\sqrt{"+(2*S)+"^2 - 16("+(W*H-TOT)+")}}{8} \\\\ &= \\frac{-"+(2*S)+" \\pm "+sD2+"}{8} \\end{aligned} \\]"+
+    "The two values are \\(x = "+x+"\\) and \\(x = "+fmt((-(2*S)-sD2)/8,2)+"\\). A border width cannot be negative, so the width is <b>"+x+" cm</b>.",
+    {ctx:"frame", W:W, H:H, x:x});
+});
+
+/* ---------- 4.11: derive the quadratic formula (L3, var) ---------- */
+E("u3-derive-formula",3,["4.11"],3,"var",varset([
+  function(){
+    return mcq("The quadratic formula is derived from \\(ax^2 + bx + c = 0\\), where \\(a \\ne 0\\), by completing the square. After every term is divided by \\(a\\) and the constant term is moved to the right side, the equation reads \\(x^2 + \\frac{b}{a}x = -\\frac{c}{a}\\). What is the next step?",
+      "Add \\(\\left(\\frac{b}{2a}\\right)^2\\) to both sides",
+      ["Take the square root of both sides",
+       "Add \\(\\frac{b}{2a}\\) to both sides",
+       "Multiply both sides by \\(2a\\)"],
+      "Completing the square means adding the square of half the coefficient of \\(x\\). Half of \\(\\frac{b}{a}\\) is \\(\\frac{b}{2a}\\), so \\(\\left(\\frac{b}{2a}\\right)^2\\) is added to both sides, which keeps the equation balanced and makes the left side a perfect square:"+
+      "\\[ \\begin{aligned} x^2 + \\frac{b}{a}x + \\left(\\frac{b}{2a}\\right)^2 &= -\\frac{c}{a} + \\left(\\frac{b}{2a}\\right)^2 \\\\ \\left(x + \\frac{b}{2a}\\right)^2 &= \\frac{b^2 - 4ac}{4a^2} \\end{aligned} \\]"+
+      "Taking square roots and then isolating \\(x\\) gives the formula.",
+      {v:1});
+  },
+  function(){
+    return mcq("When the square is completed on \\(x^2 + \\frac{b}{a}x\\), the number added to both sides is \\(\\frac{b^2}{4a^2}\\). Why is this the number that is added?",
+      "It is the square of half the coefficient of \\(x\\): \\(\\left(\\frac{1}{2} \\cdot \\frac{b}{a}\\right)^2 = \\left(\\frac{b}{2a}\\right)^2\\)",
+      ["It is chosen so that the right side of the equation becomes zero",
+       "It is the square of the constant term \\(c\\), adjusted by the value of \\(a\\)",
+       "It is twice the coefficient of \\(x\\), divided by the value of \\(a\\)"],
+      "To complete the square on \\(x^2 + px\\), add \\(\\left(\\frac{p}{2}\\right)^2\\). Here \\(p = \\frac{b}{a}\\), so the number added is \\(\\left(\\frac{b}{2a}\\right)^2 = \\frac{b^2}{4a^2}\\), and the left side becomes \\(\\left(x + \\frac{b}{2a}\\right)^2\\).",
+      {v:2});
+  },
+  function(){
+    return mcq("Near the end of the derivation, \\(\\left(x + \\frac{b}{2a}\\right)^2 = \\frac{b^2 - 4ac}{4a^2}\\) is rewritten as \\(x + \\frac{b}{2a} = \\pm \\frac{\\sqrt{b^2 - 4ac}}{2a}\\). Why does the \\(\\pm\\) symbol appear?",
+      "Taking a square root gives two possibilities, because a number and its opposite have the same square",
+      ["Because the value of \\(a\\) can be positive or negative",
+       "To allow the formula to produce imaginary roots as well as real ones",
+       "Because the square root of a fraction must be written out twice"],
+      "If \\(u^2 = w\\), then \\(u = \\sqrt{w}\\) or \\(u = -\\sqrt{w}\\): both values square to \\(w\\). The \\(\\pm\\) records both possibilities in one line. It has nothing to do with the sign of \\(a\\); the denominator \\(2a\\) comes from \\(\\sqrt{4a^2}\\) in the root of the right side.",
+      {v:3});
+  },
+  function(){
+    return mcq("The derivation begins by dividing every term of \\(ax^2 + bx + c = 0\\) by \\(a\\). Which condition is required for this step?",
+      "\\(a \\ne 0\\): division by zero is not possible, and a quadratic equation has \\(a \\ne 0\\) by definition",
+      ["\\(b \\ne 0\\), so that the equation still has an \\(x\\) term after the division",
+       "\\(c \\ne 0\\), so that the constant term can be moved to the right side",
+       "The discriminant must be positive, so that a real square root exists later"],
+      "Dividing by \\(a\\) is only meaningful when \\(a \\ne 0\\). That condition is automatic: if \\(a\\) were zero, the equation would be linear, not quadratic. The values of \\(b\\) and \\(c\\) may be zero, and the sign of the discriminant plays no part in this step.",
+      {v:4});
+  }
+]));
+
+/* ---------- extra u3 helper (hoisted): join numbers with signs, e.g. 25 - 40 + 15 ---------- */
+function u3JoinSigned(nums){
+  var out="";
+  nums.forEach(function(v,i){ if(i===0) out=""+v; else out+=(v<0?" - "+(-v):" + "+v); });
+  return out;
+}
+
+/* ---------- 4.12: find the first error in a worked solution (L3) ----------
+   Deliberate error-analysis entry: the stem presents flawed work by design. */
+E("u3-error-analysis",3,["4.12"],3,"gen",function(){
+  var fam=pick(["F1","F1","F2","F2","F3","F4"]);
+  function present(stem, lines){
+    return stem+"<br>"+lines.map(function(L,i){ return "<b>Line "+(i+1)+":</b> "+L; }).join("<br>")+
+      "<br>The work contains exactly one error. Which statement identifies the error?";
+  }
+  if(fam==="F1"){
+    var A=pick([1,2]), r1=ri(2,7), r2=ri(3,8), att=0;
+    while(att<200 && r1>=r2){ att++; r1=ri(2,7); r2=ri(3,8); }
+    var B=-A*(r1+r2), C=A*r1*r2, D=A*A*(r2-r1)*(r2-r1), s=A*(r2-r1), base=-B;
+    var mut=ri(1,4);
+    var bv=(mut===1)?B:base;
+    var sv=(mut===2)?s+2:s, Dv=sv*sv;
+    var L1="\\(x = \\frac{"+(mut===1?"("+B+")":"-("+B+")")+" \\pm \\sqrt{("+B+")^2 - 4("+A+")("+C+")}}{2("+A+")}\\)";
+    var L2="\\(x = \\frac{"+bv+" \\pm \\sqrt{"+Dv+"}}{"+(2*A)+"}\\)";
+    var L3="\\(x = \\frac{"+bv+" + "+sv+"}{"+(2*A)+"} \\text{ or } x = \\frac{"+bv+" "+(mut===3?"+":"-")+" "+sv+"}{"+(2*A)+"}\\)";
+    var plus, minus;
+    if(mut===4){ plus=""+(-r2); minus=""+(-r1); }
+    else { plus=u3FracS(bv+sv,2*A); minus=(mut===3)?plus:u3FracS(bv-sv,2*A); }
+    var L4="\\(x = "+plus+" \\text{ or } x = "+minus+"\\)";
+    var cat=["Line 1 writes the first term of the numerator as \\(b\\) instead of \\(-b\\)",
+             "Line 2 evaluates the discriminant \\(b^2 - 4ac\\) incorrectly",
+             "Line 3 uses the same sign for both roots when the \\(\\pm\\) is split",
+             "Line 4 changes the signs of the roots when the final answer is stated"];
+    var why=[ "In Line 1, the numerator must begin with \\(-b = "+base+"\\), since \\(b = "+B+"\\). Every later line is built on the wrong starting value.",
+              "In Line 2, the discriminant is \\(b^2 - 4ac = "+D+"\\), not "+Dv+"; its square root is \\("+s+"\\), not "+sv+".",
+              "In Line 3, splitting \\(\\pm\\) must produce one root with \\(+\\) and one with \\(-\\). Using \\(+\\) twice loses the second root.",
+              "Lines 1 to 3 are correct. Line 4 then changes the signs of both roots when the answer is stated."][mut-1];
+    return mcq(present("A student solves the equation \\("+u3QuadS(A,B,C)+" = 0\\) using the quadratic formula. The work is shown below.", [L1,L2,L3,L4]),
+      cat[mut-1], cat.filter(function(_,i){ return i!==mut-1; }),
+      why+" The correct computation is \\(x = \\frac{"+base+" \\pm "+s+"}{"+(2*A)+"}\\), so the solutions are <b>\\(x = "+r1+"\\)</b> and <b>\\(x = "+r2+"\\)</b>.",
+      {fam:fam, mut:mut});
+  }
+  if(fam==="F2"){
+    var s1=ri(-8,7), s2=ri(-7,8), att2=0;
+    while(att2<300){ att2++; s1=ri(-8,7); s2=ri(-7,8);
+      if(s1<s2 && s2!==0) break; }
+    var B2=-(s1+s2), C2=s1*s2, mut2=ri(1,4);
+    var f1=s1, f2=(mut2===1)?-s2:s2;
+    var prs=[{r:f1},{r:f2}];
+    prs.forEach(function(o){ o.s=u3FacS(o.r); });
+    prs.sort(function(x,y){ return x.s<y.s?-1:(x.s>y.s?1:0); });
+    if(prs[1].r===0 && mut2===3) mut2=4; /* a sign flip on a zero root would be invisible */
+    var LL1="\\("+prs.map(function(o){ return o.s; }).join("")+" = 0\\)";
+    var LL2=(mut2===2) ? "\\("+u3BinS(prs[0].r)+" = 0\\)"
+                       : "\\("+u3BinS(prs[0].r)+" = 0 \\text{ or } "+u3BinS(prs[1].r)+" = 0\\)";
+    var t1=prs[0].r, t2=(mut2===3)?-prs[1].r:prs[1].r;
+    var LL3=(mut2===2) ? "\\(x = "+t1+"\\)" : "\\(x = "+t1+" \\text{ or } x = "+t2+"\\)";
+    var LL4;
+    if(mut2===2) LL4="The solution is \\(x = "+t1+"\\).";
+    else if(mut2===4) LL4="The solutions are \\(x = "+Math.min(-t1,-t2)+"\\) and \\(x = "+Math.max(-t1,-t2)+"\\).";
+    else LL4="The solutions are \\(x = "+Math.min(t1,t2)+"\\) and \\(x = "+Math.max(t1,t2)+"\\).";
+    var cat2=["A sign in one factor in Line 1 is wrong, so the factored form does not expand to the original trinomial",
+              "Line 2 sets only one factor equal to zero, so one solution is lost",
+              "Line 3 changes a sign incorrectly when isolating \\(x\\) in one of the equations",
+              "Line 4 states both solutions with their signs reversed"];
+    var why2=[ "In Line 1, the factor \\("+u3FacS(f2)+"\\) should be \\("+u3FacS(s2)+"\\) so that the factors expand to \\("+u3QuadS(1,B2,C2)+"\\). The later lines follow the incorrect factor consistently.",
+               "In Line 2, the zero product property must be applied to both factors. Setting only one factor equal to zero loses the solution \\(x = "+prs[1].r+"\\).",
+               "In Line 3, solving \\("+u3BinS(prs[1].r)+" = 0\\) gives \\(x = "+prs[1].r+"\\), not \\(x = "+(-prs[1].r)+"\\). The sign is changed incorrectly at that step.",
+               "Lines 1 to 3 are correct. Line 4 then reverses the signs of both solutions when stating the answer."][mut2-1];
+    return mcq(present("A student solves the equation \\("+u3QuadS(1,B2,C2)+" = 0\\) by factoring. The work is shown below.", [LL1,LL2,LL3,LL4]),
+      cat2[mut2-1], cat2.filter(function(_,i){ return i!==mut2-1; }),
+      why2+" The correct solutions are <b>\\(x = "+s1+"\\)</b> and <b>\\(x = "+s2+"\\)</b>.",
+      {fam:fam, mut:mut2});
+  }
+  if(fam==="F3"){
+    var u1=ri(-7,8), u2=ri(-6,9), att3=0;
+    while(att3<400){ att3++; u1=ri(-7,8); u2=ri(-6,9);
+      if(u1<u2 && u1!==0 && u2!==0 && ((u1+u2)%2===0) && (u1+u2)!==0) break; }
+    var B3=-(u1+u2), C3=u1*u2, m3=B3/2, s3=(u2-u1)/2, mut3=pick([3,4]);
+    var ML1="\\("+u3QuadS(1,B3,0)+" = "+(-C3)+"\\)";
+    var ML2="\\("+u3QuadS(1,B3,m3*m3)+" = "+(-C3)+" + "+(m3*m3)+"\\)";
+    var fi="x"+(m3>0?" + "+m3:" - "+(-m3)), fiB="x"+(B3>0?" + "+B3:" - "+(-B3));
+    var ML3=(mut3===3) ? "\\(("+fiB+")^2 = "+(s3*s3)+" \\Rightarrow "+fiB+" = \\pm "+s3+"\\)"
+                       : "\\(("+fi+")^2 = "+(s3*s3)+" \\Rightarrow "+fi+" = \\pm "+s3+"\\)";
+    var ML4=(mut3===3) ? "\\(x = "+(-B3-s3)+" \\text{ or } x = "+(-B3+s3)+"\\)"
+                       : "\\(x = "+(m3-s3)+" \\text{ or } x = "+(m3+s3)+"\\)";
+    var cat3=["Line 1 moves the constant term to the right side without changing its sign",
+              "Line 2 adds a value that is not the square of half the coefficient of \\(x\\)",
+              "Line 3 writes the squared factor with the full coefficient of \\(x\\) instead of half of it",
+              "Line 4 isolates \\(x\\) by adding half the coefficient of \\(x\\) instead of subtracting it"];
+    var why3=(mut3===3)
+      ? "In Line 3, completing the square on \\(x^2 "+(B3<0?"- "+(-B3):"+ "+B3)+"x\\) produces the factor \\(("+fi+")^2\\), built from half the coefficient of \\(x\\), which is \\("+m3+"\\). Writing \\(("+fiB+")^2\\) uses the full coefficient \\("+B3+"\\) instead."
+      : "In Line 4, isolating \\(x\\) from \\("+fi+" = \\pm "+s3+"\\) means subtracting \\("+m3+"\\) from both sides. Adding it instead shifts both roots.";
+    return mcq(present("A student solves the equation \\("+u3QuadS(1,B3,C3)+" = 0\\) by completing the square. The work is shown below.", [ML1,ML2,ML3,ML4]),
+      cat3[mut3-1], cat3.filter(function(_,i){ return i!==mut3-1; }),
+      why3+" The correct solutions are <b>\\(x = "+u1+"\\)</b> and <b>\\(x = "+u2+"\\)</b>.",
+      {fam:fam, mut:mut3});
+  }
+  /* F4: square-root method on (x - h)^2 = K */
+  var h=ri(-7,7); if(h===0) h=5;
+  var kk=ri(2,9), K=kk*kk, mut4=ri(1,4);
+  var inner="x"+(h>0?" - "+h:" + "+(-h));
+  var vP=h+kk, vM=h-kk;
+  var NL1=(mut4===1) ? "\\("+inner+" = "+kk+"\\)" : "\\("+inner+" = \\pm "+kk+"\\)";
+  var NL2=(mut4===1) ? "\\("+inner+" = "+kk+"\\)"
+        : (mut4===2) ? "\\("+inner+" = "+kk+" \\text{ or } "+inner+" = "+kk+"\\)"
+        : "\\("+inner+" = "+kk+" \\text{ or } "+inner+" = "+(-kk)+"\\)";
+  var NL3=(mut4===1 || mut4===2) ? "\\(x = "+vP+"\\)"
+        : (mut4===3) ? "\\(x = "+(-h+kk)+" \\text{ or } x = "+(-h-kk)+"\\)"
+        : "\\(x = "+vP+" \\text{ or } x = "+vM+"\\)";
+  var NL4;
+  if(mut4===1 || mut4===2) NL4="The solution is \\(x = "+vP+"\\).";
+  else if(mut4===3) NL4="The solutions are \\(x = "+(-h-kk)+"\\) and \\(x = "+(-h+kk)+"\\).";
+  else if(mut4===4) NL4="The solutions are \\(x = "+(-vP)+"\\) and \\(x = "+(-vM)+"\\).";
+  else NL4="The solutions are \\(x = "+vM+"\\) and \\(x = "+vP+"\\).";
+  var cat4=["Line 1 takes the square root of the right side but drops the negative possibility",
+            "Line 2 writes the same equation twice instead of the positive and negative cases",
+            "Line 3 moves the constant term to the other side with the wrong sign",
+            "Line 4 states both solutions with their signs reversed"];
+  var why4=[ "In Line 1, taking the square root of \\("+K+"\\) gives both \\("+kk+"\\) and \\("+(-kk)+"\\). Dropping the negative case loses the solution \\(x = "+vM+"\\).",
+             "In Line 2, the two cases must be \\("+inner+" = "+kk+"\\) and \\("+inner+" = "+(-kk)+"\\). Writing the positive case twice loses the solution \\(x = "+vM+"\\).",
+             "In Line 3, isolating \\(x\\) in \\("+inner+" = "+(-kk)+"\\) means adding \\("+h+"\\) to both sides. The sign is handled incorrectly, shifting both values.",
+             "Lines 1 to 3 are correct. Line 4 then reverses the signs of both solutions when stating the answer."][mut4-1];
+  return mcq(present("A student solves the equation \\(("+inner+")^2 = "+K+"\\). The work is shown below.", [NL1,NL2,NL3,NL4]),
+    cat4[mut4-1], cat4.filter(function(_,i){ return i!==mut4-1; }),
+    why4+" The correct solutions are <b>\\(x = "+vM+"\\)</b> and <b>\\(x = "+vP+"\\)</b>.",
+    {fam:fam, mut:mut4});
+});
+
+/* ---------- 4.13: choose a method, justify it, and verify (L3) ---------- */
+E("u3-method-choice",3,["4.13"],3,"gen",function(){
+  function formulaRootStr(base,coef,rad,den,sign){
+    var g=u3Gcd(u3Gcd(base,coef),den); base/=g; coef/=g; den/=g;
+    var radTerm=(coef===1?"\\sqrt{"+rad+"}":coef+"\\sqrt{"+rad+"}");
+    var num;
+    if(base===0) num=(sign<0?"-":"")+radTerm;
+    else num=base+(sign<0?" - ":" + ")+radTerm;
+    return den===1 ? num : "\\frac{"+num+"}{"+den+"}";
+  }
+  var sc=pick(["SA","SB","SC","SD","SE"]);
+  var stemHead="Which method is the most appropriate first choice for solving the equation ";
+  if(sc==="SA"){
+    var form=pick(["shift","pure"]), rp, K, eqS, solA, hiS;
+    if(form==="shift"){
+      var h=ri(-6,6); if(h===0) h=3;
+      K=pick([9,16,25,36,49,8,12,18,20,27,32,45,50]); rp=u3RadParts(K);
+      var inner=u3InnerS(1,"x",-h);
+      eqS="\\(("+inner+")^2 = "+K+"\\)";
+      var sqrtTerm=(rp[1]===1? ""+rp[0] : (rp[0]===1?"\\sqrt{"+rp[1]+"}":rp[0]+"\\sqrt{"+rp[1]+"}"));
+      function rrS(hh,sign){ if(rp[1]===1) return ""+(hh+sign*rp[0]);
+        var t=(rp[0]===1?"\\sqrt{"+rp[1]+"}":rp[0]+"\\sqrt{"+rp[1]+"}"); return hh+(sign<0?" - ":" + ")+t; }
+      hiS=rrS(h,1);
+      solA="Taking square roots is the direct method here:"+
+        "\\[ \\begin{aligned} ("+inner+")^2 &= "+K+" \\\\ "+inner+" &= \\pm "+sqrtTerm+" \\\\ x &= "+h+" \\pm "+sqrtTerm+" \\end{aligned} \\]"+
+        "Check: when \\(x = "+hiS+"\\), \\("+inner+" = "+sqrtTerm+"\\), and \\(("+sqrtTerm+")^2 = "+K+"\\), so the equation is satisfied.";
+    } else {
+      K=pick([6,10,14,15,21,24,30,35,40]); rp=u3RadParts(K);
+      eqS="\\(x^2 = "+K+"\\)";
+      var sqrtTerm2=(rp[0]===1?"\\sqrt{"+rp[1]+"}":rp[0]+"\\sqrt{"+rp[1]+"}");
+      hiS=sqrtTerm2;
+      solA="Taking square roots is the direct method here:"+
+        "\\[ \\begin{aligned} x^2 &= "+K+" \\\\ x &= \\pm "+sqrtTerm2+" \\end{aligned} \\]"+
+        "Check: \\(\\left("+sqrtTerm2+"\\right)^2 = "+K+"\\), so \\(x = "+sqrtTerm2+"\\) satisfies the equation, and so does its opposite.";
+    }
+    return mcq(stemHead+eqS+", and why?",
+      "Take square roots of both sides: the equation is already a squared expression equal to a constant, so this undoes the square in one step",
+      ["Use the quadratic formula: the equation must first be expanded into the form \\(ax^2 + bx + c = 0\\) before any method can be applied",
+       "Complete the square: the squared expression on the left still has to be built by adding a constant",
+       "Factor the left side and use the zero product property: the left side is a product of two different factors"],
+      solA, {sc:sc});
+  }
+  if(sc==="SB"){
+    var r1=ri(-7,7), r2=ri(-7,7), att=0;
+    while(att<200 && r1===r2){ att++; r2=ri(-7,7); }
+    var B=-(r1+r2), C=r1*r2, Q=u3QuadS(1,B,C);
+    return mcq(stemHead+"\\("+Q+" = 0\\), and why?",
+      "Factor the trinomial and apply the zero product property: it factors into two binomials with integer constants",
+      ["Use the quadratic formula: no other method produces the roots exactly",
+       "Use the quadratic formula: the trinomial factors only with fraction constants",
+       "Take square roots of both sides: the trinomial is a perfect square"],
+      "Factoring is the most direct method:"+
+      "\\[ \\begin{aligned} "+Q+" &= 0 \\\\ "+u3TwoFac(u3FacS(r1), u3FacS(r2))+" &= 0 \\end{aligned} \\]"+
+      "So \\(x = "+r1+"\\) or \\(x = "+r2+"\\). Verify by substituting \\(x = "+r1+"\\) into the original equation:"+
+      "\\[ ("+r1+")^2 + ("+B+")("+r1+") + ("+C+") = "+u3JoinSigned([r1*r1, B*r1, C])+" = 0 \\]"+
+      "The value checks, so \\(x = "+r1+"\\) is a root.",
+      {sc:sc});
+  }
+  if(sc==="SC"){
+    var bE=pick([6,8,10,12])*pick([-1,1]), D=pick([20,28,40,44,52,60,68,76,80,84,92].filter(function(v){ return v<bE*bE && (bE*bE-v)%4===0; }));
+    var cE=(bE*bE-D)/4, mE=bE/2, rpE=u3RadParts(D), tC=rpE[0]/2, tR=rpE[1];
+    var Q2=u3QuadS(1,bE,cE);
+    function scRoot(sign){ var t=(tC===1?"\\sqrt{"+tR+"}":tC+"\\sqrt{"+tR+"}"); return (-mE)+(sign<0?" - ":" + ")+t; }
+    return mcq(stemHead+"\\("+Q2+" = 0\\), and why?",
+      "Complete the square: \\(a = 1\\) and the coefficient of \\(x\\) is even, so halving it gives a whole number and the square completes without fractions",
+      ["Factor the trinomial: it factors into two binomials with integer constants",
+       "Use the quadratic formula: it is the only method that can produce irrational roots",
+       "Take square roots of both sides: the left side is a perfect square trinomial"],
+      "Completing the square keeps the arithmetic clean here:"+
+      "\\[ \\begin{aligned} x^2 "+(bE<0?"- "+(-bE):"+ "+bE)+"x &= "+(-cE)+" \\\\ x^2 "+(bE<0?"- "+(-bE):"+ "+bE)+"x + "+(mE*mE)+" &= "+(-cE)+" + "+(mE*mE)+" \\\\ (x "+(mE<0?"- "+(-mE):"+ "+mE)+")^2 &= "+(D/4)+" \\\\ x &= "+scRoot(-1)+" \\text{ or } "+scRoot(1)+" \\end{aligned} \\]"+
+      "Verify with the sum and product of the roots: the sum is \\("+(-2*mE)+" = -b\\) and the product is \\("+(mE*mE)+" - "+(tC*tC*tR)+" = "+cE+" = c\\), which matches the equation.",
+      {sc:sc});
+  }
+  if(sc==="SD"){
+    var att3=0, a3,b3,c3,D3,rp3;
+    while(att3<600){ att3++;
+      a3=pick([2,3,5]); b3=pick([-9,-7,-5,-3,-1,1,3,5,7,9]); c3=ri(-9,9);
+      if(c3===0) continue;
+      D3=b3*b3-4*a3*c3; if(D3<=0) continue;
+      rp3=u3RadParts(D3); if(rp3[1]<=1) continue;
+      break; }
+    var Q3=u3QuadS(a3,b3,c3);
+    var loR=formulaRootStr(-b3, rp3[0], rp3[1], 2*a3, -1), hiR=formulaRootStr(-b3, rp3[0], rp3[1], 2*a3, 1);
+    return mcq(stemHead+"\\("+Q3+" = 0\\), and why?",
+      "Use the quadratic formula: the trinomial does not factor over the integers, so the formula gives the exact roots directly",
+      ["Factor the trinomial: it factors into two binomials with integer constants",
+       "Complete the square: half of the coefficient of \\(x\\) is a whole number",
+       "Take square roots of both sides: the equation has no \\(x\\) term"],
+      "The discriminant is \\("+D3+"\\), which is not a perfect square, so the roots are irrational and no integer factorization exists. The formula gives them directly:"+
+      "\\[ \\begin{aligned} x &= \\frac{-("+b3+") \\pm \\sqrt{"+D3+"}}{"+(2*a3)+"} \\\\ &= "+loR+" \\text{ or } "+hiR+" \\end{aligned} \\]"+
+      "Verify with the sum and product of the roots: their sum is \\("+u3FracS(-b3,a3)+" = -\\frac{b}{a}\\) and their product is \\("+u3FracS(c3,a3)+" = \\frac{c}{a}\\), which matches the equation.",
+      {sc:sc});
+  }
+  /* SE: perfect square trinomial */
+  var mm=pick([-8,-7,-6,-5,-4,-3,-2,2,3,4,5,6,7,8]);
+  var B5=2*mm, C5=mm*mm, Q5=u3QuadS(1,B5,C5);
+  var inner5="x"+(mm>0?" + "+mm:" - "+(-mm));
+  return mcq(stemHead+"\\("+Q5+" = 0\\), and why?",
+    "Take square roots: the left side is a perfect square trinomial, \\(("+inner5+")^2\\), so the equation has a single repeated root",
+    ["Use the quadratic formula: the discriminant is positive, so there are two distinct roots",
+     "Factor by grouping: the expression splits naturally into two pairs of terms",
+     "Complete the square: the square still has to be built by adding a constant to both sides"],
+    "The left side is already a perfect square:"+
+    "\\[ \\begin{aligned} "+Q5+" &= ("+inner5+")^2 \\\\ "+inner5+" &= 0 \\\\ x &= "+(-mm)+" \\end{aligned} \\]"+
+    "Verify by substituting \\(x = "+(-mm)+"\\) into the original equation:"+
+    "\\[ ("+(-mm)+")^2 + ("+B5+")("+(-mm)+") + ("+C5+") = "+u3JoinSigned([mm*mm, B5*(-mm), C5])+" = 0 \\]"+
+    "The value checks, so \\(x = "+(-mm)+"\\) is the repeated root.",
+    {sc:sc});
+});
+
+/* ================= Unit 4: Radical Expressions and Equations ================= */
+/* ================= Unit 4: Radical Expressions and Equations ================= */
+/* Indicators: 1.1, 1.2, 1.3, 1.4, 1.9, 1.11, 1.12, 1.13, 1.14, 1.15, 1.16,
+   1.17, 1.18, 1.19, 1.20. Types follow the Mauger Chapter 5 sets (simplify
+   radicals, convert between entire and mixed radicals, add/subtract/multiply
+   radicals, rationalize denominators, restrictions, solve radical equations
+   and check roots, error spotting) and the MHR Pre-Calculus 11 Chapter 5 bank
+   (Radical Expressions and Equations), rewritten with original stems and
+   values. */
+
+function u4sgn(n){return n>0?" + "+n:(n<0?" - "+(-n):"");}
+function u4gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=a%b;a=b;b=t;}return a||1;}
+function u4sqf(n){if(n<2)return false;for(var d=2;d*d<=n;d++){if(n%(d*d)===0)return false;}return true;}
+function u4simp(N){var a=1;for(var d=Math.floor(Math.sqrt(N));d>=2;d--){if(N%(d*d)===0){a=d;break;}}return [a,N/(a*a)];}
+function u4simp3(N){var a=1;for(var d=Math.floor(Math.cbrt(N))+1;d>=2;d--){if(N%(d*d*d)===0){a=d;break;}}return [a,N/(a*a*a)];}
+function u4mixS(a,b,idx){var rad=(idx===3)?"\\sqrt[3]{"+b+"}":"\\sqrt{"+b+"}";return (a===1?"":a)+rad;}
+function u4vp(v,e){return e===0?"":(e===1?v:v+"^{"+e+"}");}
+function u4coef(c){return c===1?"":(""+c);}
+/* collect n distractor strings from cands, each distinct and different from correct */
+function u4dis(correct,cands,n){
+  var out=[],seen={};seen[String(correct)]=1;
+  for(var i=0;i<cands.length&&out.length<n;i++){var s=String(cands[i]);if(!seen[s]){seen[s]=1;out.push(s);}}
+  return out;
+}
+function u4wrap(s){return "\\("+s+"\\)";}
+
+/* ---------- 1.1 + 1.2: convert between entire and mixed radicals, numerical (L1) ---------- */
+E("u4-convert-numeric",4,["1.1","1.2"],1,"gen",function(){
+  var shape=pick(["toMixed","toMixed","toEntire"]);
+  if(shape==="toMixed"){
+    var idx=pick([2,2,2,3]);
+    if(idx===2){
+      var a=ri(2,9),b=pick([2,3,5,6,7,10,11,13,14,15,17,19,21,22,23,26,29,30]);
+      var N=a*a*b,cor=u4mixS(a,b,2);
+      var b2=pick([2,3,5,6,7,10,11,13,14,15].filter(function(z){return z!==b;}));
+      var cands=[u4mixS(a+1,b,2),u4mixS(a,b2,2),u4mixS(a+2,b,2)];
+      if(a>2)cands.push(u4mixS(a-1,b,2));
+      if(a%2===0)cands.push(u4mixS(a/2,4*b,2));
+      return mcq("Express \\(\\sqrt{"+N+"}\\) as a mixed radical in simplest form.",
+        u4wrap(cor),u4dis(cor,cands,3).map(u4wrap),
+        "The largest perfect square that divides \\("+N+"\\) is \\("+a+"^2 = "+(a*a)+"\\), and \\("+N+" = "+(a*a)+" \\times "+b+"\\): \\[ \\begin{aligned} \\sqrt{"+N+"} &= \\sqrt{"+(a*a)+" \\times "+b+"} \\\\ &= \\sqrt{"+(a*a)+"} \\times \\sqrt{"+b+"} \\\\ &= "+cor+" \\end{aligned} \\] So \\(\\sqrt{"+N+"} = <b>"+cor+"</b>\\).",
+        {a:a,b:b,idx:idx,shape:shape});
+    }
+    var a3=ri(2,5),b3=2,sm3,tries=0;
+    do{b3=pick([2,3,4,5,6,7,9,10,11,12,13,14,15,17,18,19,20,22,23,25,26,28,30]);sm3=u4simp3(a3*a3*a3*b3);tries++;}
+    while((sm3[0]!==a3||sm3[1]!==b3)&&tries<80);
+    var N3=a3*a3*a3*b3,cor3=u4mixS(a3,b3,3);
+    var b3x=pick([2,3,5,6,7,10,12,14,15,20].filter(function(z){return z!==b3;}));
+    var cands3=[u4mixS(a3+1,b3,3),u4mixS(a3,b3x,3),u4mixS(a3+2,b3,3)];
+    if(a3>2)cands3.push(u4mixS(a3-1,b3,3));
+    return mcq("Express \\(\\sqrt[3]{"+N3+"}\\) as a mixed radical in simplest form.",
+      u4wrap(cor3),u4dis(cor3,cands3,3).map(u4wrap),
+      "The largest perfect cube that divides \\("+N3+"\\) is \\("+a3+"^3 = "+(a3*a3*a3)+"\\), and \\("+N3+" = "+(a3*a3*a3)+" \\times "+b3+"\\): \\[ \\begin{aligned} \\sqrt[3]{"+N3+"} &= \\sqrt[3]{"+(a3*a3*a3)+" \\times "+b3+"} \\\\ &= \\sqrt[3]{"+(a3*a3*a3)+"} \\times \\sqrt[3]{"+b3+"} \\\\ &= "+cor3+" \\end{aligned} \\] So \\(\\sqrt[3]{"+N3+"} = <b>"+cor3+"</b>\\).",
+      {a:a3,b:b3,idx:3,shape:shape});
+  }
+  var idx2=pick([2,2,3]);
+  if(idx2===2){
+    var p=ri(2,9),q=pick([2,3,5,6,7,10,11,13,14,15].filter(function(z){return z!==p;}));
+    var R=p*p*q;
+    var candR=u4dis(""+R,[p*q,p*q*q,p*p+q,(p+1)*(p+1)*q,p*p*q+q],3);
+    return mcq("Express \\("+p+"\\sqrt{"+q+"}\\) as an entire radical.",
+      "\\(\\sqrt{"+R+"}\\)",candR.map(function(z){return "\\(\\sqrt{"+z+"}\\)";}),
+      "The coefficient moves inside the radical as its square: \\[ \\begin{aligned} "+p+"\\sqrt{"+q+"} &= \\sqrt{"+(p*p)+"} \\times \\sqrt{"+q+"} \\\\ &= \\sqrt{"+(p*p)+" \\times "+q+"} \\\\ &= \\sqrt{"+R+"} \\end{aligned} \\] So \\("+p+"\\sqrt{"+q+"} = <b>\\sqrt{"+R+"}</b>\\).",
+      {p:p,q:q,idx:idx2,shape:shape});
+  }
+  var p3=ri(2,5),q3=pick([2,3,4,5,6,7,9,10,11,13,14,15].filter(function(z){return z!==p3;}));
+  var R3=p3*p3*p3*q3;
+  var candR3=u4dis(""+R3,[p3*q3,p3*q3*q3*q3,p3*p3*p3+q3,(p3+1)*(p3+1)*(p3+1)*q3,p3*p3*q3],3);
+  return mcq("Express \\("+p3+"\\sqrt[3]{"+q3+"}\\) as an entire radical.",
+    "\\(\\sqrt[3]{"+R3+"}\\)",candR3.map(function(z){return "\\(\\sqrt[3]{"+z+"}\\)";}),
+    "The coefficient moves inside the radical as its cube: \\[ \\begin{aligned} "+p3+"\\sqrt[3]{"+q3+"} &= \\sqrt[3]{"+(p3*p3*p3)+"} \\times \\sqrt[3]{"+q3+"} \\\\ &= \\sqrt[3]{"+(p3*p3*p3)+" \\times "+q3+"} \\\\ &= \\sqrt[3]{"+R3+"} \\end{aligned} \\] So \\("+p3+"\\sqrt[3]{"+q3+"} = <b>\\sqrt[3]{"+R3+"}</b>\\).",
+    {p:p3,q:q3,idx:idx2,shape:shape});
+});
+
+/* ---------- 1.11: value of a square root of a square, numerical (L1) ---------- */
+E("u4-root-of-square",4,["1.11"],1,"gen",function(){
+  var shape=pick(["neg","neg","given","square","decimal"]);
+  if(shape==="neg"||shape==="decimal"){
+    var k=(shape==="neg")?ri(2,25):pick([0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5]);
+    var ks=fmt(k,1),nks=fmt(-k,1),sq=fmt(k*k,2);
+    return mcq("What is the value of \\(\\sqrt{(-"+ks+")^2}\\)?",
+      ks,[nks,"\\(\\pm "+ks+"\\)",sq],
+      "The square removes the sign: \\((-"+ks+")^2 = "+sq+"\\). A square root symbol means the non-negative (principal) root, so \\(\\sqrt{"+sq+"} = "+ks+"\\). The value is never negative, and a single square root never gives a plus-or-minus pair. The value is <b>"+ks+"</b>.",
+      {k:k,shape:shape});
+  }
+  if(shape==="given"){
+    var k2=ri(2,20);
+    return mcq("If \\(x = -"+k2+"\\), what is the value of \\(\\sqrt{x^2}\\)?",
+      ""+k2,[""+(-k2),"\\(\\pm "+k2+"\\)",""+(k2*k2)],
+      "Substituting gives \\(\\sqrt{(-"+k2+")^2} = \\sqrt{"+(k2*k2)+"}\\). The principal square root is non-negative, so the value is <b>"+k2+"</b>, the absolute value of \\(x\\).",
+      {k:k2,shape:shape});
+  }
+  var k3=ri(2,20);
+  return mcq("What is the value of \\((-"+k3+")^2\\)?",
+    ""+(k3*k3),[""+(-k3*k3),""+k3,""+(-k3)],
+    "Squaring a negative number gives a positive product: \\((-"+k3+")^2 = (-"+k3+") \\times (-"+k3+") = "+(k3*k3)+"\\). In general, \\((-x)^2 = x^2\\). The value is <b>"+(k3*k3)+"</b>.",
+    {k:k3,shape:shape});
+});
+
+/* ---------- 1.4: mixed radical with variables to entire radical (L1) ---------- */
+E("u4-var-to-entire",4,["1.4"],1,"gen",function(){
+  var v=pick(["x","y","t","m"]),p=ri(2,6),q=ri(0,3),s=ri(0,2),r;
+  if(q===0&&s===0)q=1;
+  if(s===0)r=pick([2,3,5,6,7,10,11,13]);
+  else r=pick([1,2,3,5,6,7,10]);
+  var R=p*p*r,E=2*q+s;
+  function rad(rc,re){return "\\sqrt{"+rc+u4vp(v,re)+"}";}
+  var outside=u4coef(p)+u4vp(v,q);
+  var inside=(r===1?"":r)+u4vp(v,s);
+  var cor=rad(R,E);
+  var cands=[rad(p*r,E),rad(R,q===0?2*s:q+s),rad(p*p*r*r,E),rad((p+1)*(p+1)*r,E),rad(R,E+1),rad(p*p,E)];
+  return mcq("Express \\("+outside+"\\sqrt{"+inside+"}\\) as an entire radical.",
+    u4wrap(cor),u4dis(cor,cands,3).map(u4wrap),
+    "The outside factor moves inside by squaring it, variable part included: \\[ \\begin{aligned} "+outside+"\\sqrt{"+inside+"} &= \\sqrt{"+(p*p)+u4vp(v,2*q)+"} \\times \\sqrt{"+inside+"} \\\\ &= \\sqrt{"+R+u4vp(v,E)+"} \\end{aligned} \\] So the entire radical is <b>"+u4wrap(cor)+"</b>\\).",
+    {p:p,q:q,r:r,s:s,v:v});
+});
+
+/* ---------- 1.3: entire radical with variables to mixed radical (L2) ---------- */
+function u4mixVarStr(a,v,f,b,g){
+  var out=u4coef(a)+u4vp(v,f);
+  var inside=(b===1?"":b)+u4vp(v,g);
+  if(inside==="")return out===""?"1":out;
+  return out+"\\sqrt{"+inside+"}";
+}
+function u4twoVarStr(oc,ex,ey,ic,ix,iy){
+  var out=u4coef(oc)+u4vp("x",ex)+u4vp("y",ey);
+  var inside=(ic===1?"":ic)+u4vp("x",ix)+u4vp("y",iy);
+  if(inside==="")return out===""?"1":out;
+  return out+"\\sqrt{"+inside+"}";
+}
+E("u4-var-to-mixed",4,["1.3"],2,"gen",function(){
+  var shape=pick(["one","one","two"]);
+  if(shape==="one"){
+    var a=ri(2,7),b=pick([1,2,3,5,6,7,10]),e=ri(2,9);
+    if(b===1&&e%2===0)e=e+1;
+    var c=a*a*b,f=Math.floor(e/2),g=e%2;
+    var cor=u4mixVarStr(a,"x",f,b,g);
+    var d2=(g===1)?u4mixVarStr(a,"x",f,b,0):u4mixVarStr(a,"x",f,b,1);
+    var cands=[u4mixVarStr(1,"x",f,c,g),d2,u4mixVarStr(a,"x",f-1,b,g+2),u4mixVarStr(a,"x",f+1,b,0)];
+    var insideB=(b===1?"":b)+u4vp("x",g);
+    return mcq("Express \\(\\sqrt{"+c+u4vp("x",e)+"}\\) as a mixed radical in simplest form. Assume \\(x \\geq 0\\).",
+      u4wrap(cor),u4dis(cor,cands,3).map(u4wrap),
+      "Factor out the largest perfect square, \\("+a+"^2 x^{"+(2*f)+"} = "+(a*a)+u4vp("x",2*f)+"\\): \\[ \\begin{aligned} \\sqrt{"+c+u4vp("x",e)+"} &= \\sqrt{"+(a*a)+u4vp("x",2*f)+" \\times "+insideB+"} \\\\ &= "+cor+" \\end{aligned} \\] So the mixed radical is <b>"+u4wrap(cor)+"</b>\\).",
+      {a:a,b:b,e:e,shape:shape});
+  }
+  var a2=ri(2,5),b2=pick([1,2,3,5,6]),ex=ri(1,6),ey=ri(1,6);
+  if(ex===1&&ey===1)ey=2;
+  if(b2===1&&ex%2===0&&ey%2===0)ex=ex+1;
+  var c2=a2*a2*b2,fx=Math.floor(ex/2),fy=Math.floor(ey/2),gx=ex%2,gy=ey%2;
+  var cor2=u4twoVarStr(a2,fx,fy,b2,gx,gy);
+  var cands2=[u4twoVarStr(1,fx,0,c2,gx,ey),u4twoVarStr(1,0,fy,c2,ex,gy),u4twoVarStr(a2,fx,fy,b2,0,0),u4twoVarStr(1,fx,fy,c2,gx,gy)];
+  return mcq("Express \\(\\sqrt{"+c2+u4vp("x",ex)+u4vp("y",ey)+"}\\) as a mixed radical in simplest form. Assume \\(x, y \\geq 0\\).",
+    u4wrap(cor2),u4dis(cor2,cands2,3).map(u4wrap),
+    "Factor out the largest perfect square, \\("+(a2*a2)+u4vp("x",2*fx)+u4vp("y",2*fy)+"\\), which is the square of \\("+a2+u4vp("x",fx)+u4vp("y",fy)+"\\): \\[ \\begin{aligned} \\sqrt{"+c2+u4vp("x",ex)+u4vp("y",ey)+"} &= \\sqrt{"+(a2*a2)+u4vp("x",2*fx)+u4vp("y",2*fy)+" \\times "+((b2===1?"":b2)+u4vp("x",gx)+u4vp("y",gy))+"} \\\\ &= "+cor2+" \\end{aligned} \\] So the mixed radical is <b>"+u4wrap(cor2)+"</b>\\).",
+    {a:a2,b:b2,ex:ex,ey:ey,shape:shape});
+});
+
+/* ---------- 1.9: compare and order radicals (L2) ---------- */
+E("u4-order-radicals",4,["1.9"],2,"gen",function(){
+  var pool=[5,6,7,8,10,11,12,13,14,15,17,18,19,20,21,22,23,24,26,27,28,29,30,31,32,33,34,35,37,38,39,40,41,42,43,44,45,46,47,48];
+  var vals,tries=0;
+  do{
+    vals=shuffle(pool.slice()).slice(0,4).sort(function(x,y){return x-y;});
+    tries++;
+  }while(vals.filter(function(v){return u4simp(v)[0]>1;}).length<2&&tries<60);
+  var letters=["P","Q","R","S"];
+  var items=vals.map(function(v){
+    var sm=u4simp(v),form;
+    if(sm[0]>1&&Math.random()<0.65)form="\\("+u4mixS(sm[0],sm[1],2)+"\\)";
+    else form="\\(\\sqrt{"+v+"}\\)";
+    return {v:v,form:form};
+  });
+  var order=shuffle([0,1,2,3]);
+  var stem="The four radicals are: "+letters.map(function(L,i){return L+" = "+items[order[i]].form;}).join(", ")+". Which list orders the radicals from <b>least to greatest</b>?";
+  var letterOf=items.map(function(it,vi){return letters[order.indexOf(vi)];});
+  var corSeq=letterOf.join(", ");
+  var sw1=letterOf.slice(),sw2=letterOf.slice(),tmp;
+  tmp=sw1[0];sw1[0]=sw1[1];sw1[1]=tmp;
+  tmp=sw2[2];sw2[2]=sw2[3];sw2[3]=tmp;
+  var rev=letterOf.slice().reverse();
+  return mcq(stem,corSeq,u4dis(corSeq,[sw1.join(", "),sw2.join(", "),rev.join(", ")],3),
+    "Rewrite each radical as an entire radical: "+items.map(function(it,vi){return letterOf[vi]+" = \\(\\sqrt{"+it.v+"}\\)";}).join(", ")+". For square roots, a larger radicand means a larger value, and "+vals.join(" < ")+". So the order from least to greatest is <b>"+corSeq+"</b>.",
+    {vals:vals});
+});
+
+/* ---------- 1.11: the identities sqrt(x^2) = |x| and (-x)^2 = x^2 (L2) ---------- */
+E("u4-identity-truth",4,["1.11"],2,"gen",function(){
+  var shape=pick(["allReal","allRealCoef","sign","whichX","shifted","numeric"]);
+  if(shape==="allReal"){
+    var v=pick(["x","a","t","n"]);
+    return mcq("Which statement is true for <b>all</b> real values of \\("+v+"\\)?",
+      "\\(\\sqrt{"+v+"^2} = |"+v+"|\\)",
+      ["\\(\\sqrt{"+v+"^2} = "+v+"\\)","\\(\\sqrt{"+v+"^2} = \\pm "+v+"\\)","\\(\\sqrt{"+v+"^2} = "+v+"^2\\)"],
+      "A square root symbol always gives the non-negative root. When \\("+v+"\\) is negative, \\(\\sqrt{"+v+"^2}\\) is still positive, so it equals the absolute value: <b>\\(\\sqrt{"+v+"^2} = |"+v+"|\\)</b>. It cannot equal \\("+v+"\\) itself when \\("+v+" < 0\\), and one square root never produces a plus-or-minus pair.",
+      {v:v,shape:shape});
+  }
+  if(shape==="allRealCoef"){
+    var k=ri(2,5),v2=pick(["x","t"]);
+    return mcq("Which statement is true for <b>all</b> real values of \\("+v2+"\\)?",
+      "\\(\\sqrt{("+k+v2+")^2} = |"+k+v2+"|\\)",
+      ["\\(\\sqrt{("+k+v2+")^2} = "+k+v2+"\\)","\\(\\sqrt{("+k+v2+")^2} = \\pm "+k+v2+"\\)","\\(\\sqrt{("+k+v2+")^2} = -"+k+v2+"\\)"],
+      "The expression inside the square, \\("+k+v2+"\\), can be negative, zero, or positive as \\("+v2+"\\) varies. The square root of its square is its absolute value: <b>\\(\\sqrt{("+k+v2+")^2} = |"+k+v2+"|\\)</b>, which is the choice that stays non-negative for every value of \\("+v2+"\\).",
+      {k:k,v:v2,shape:shape});
+  }
+  if(shape==="sign"){
+    var v3=pick(["x","a","t"]),neg=pick([true,false]);
+    if(neg){
+      return mcq("If \\("+v3+" < 0\\), then \\(\\sqrt{"+v3+"^2}\\) equals",
+        "\\(-"+v3+"\\)",
+        ["\\("+v3+"\\)","\\(\\pm "+v3+"\\)","\\("+v3+"^2\\)"],
+        "Since \\(\\sqrt{"+v3+"^2} = |"+v3+"|\\) and \\("+v3+"\\) is negative, its absolute value is its opposite: <b>\\(-"+v3+"\\)</b>, which is positive.",
+        {v:v3,shape:shape});
+    }
+    return mcq("If \\("+v3+" > 0\\), then \\(\\sqrt{"+v3+"^2}\\) equals",
+      "\\("+v3+"\\)",
+      ["\\(-"+v3+"\\)","\\(\\pm "+v3+"\\)","\\("+v3+"^2\\)"],
+      "Since \\(\\sqrt{"+v3+"^2} = |"+v3+"|\\) and \\("+v3+"\\) is positive, its absolute value is itself: <b>\\("+v3+"\\)</b>.",
+      {v:v3,shape:shape});
+  }
+  if(shape==="whichX"){
+    var k4=ri(3,9);
+    return mcq("For which value of \\(x\\) is the statement \\(\\sqrt{x^2} = -x\\) true?",
+      ""+(-k4),[""+k4,"Every real number","No real number"],
+      "The left side is \\(|x|\\) in disguise, and \\(|x| = -x\\) holds exactly when \\(x \\leq 0\\). Of the choices, only \\(x = "+(-k4)+"\\) qualifies: at \\(x = "+k4+"\\) the left side is \\("+k4+"\\) while the right side is \\("+(-k4)+"\\). So the statement is true for <b>\\(x = "+(-k4)+"\\)</b>.",
+      {k:k4,shape:shape});
+  }
+  if(shape==="shifted"){
+    var v5=pick(["x","t"]),h=ri(2,12);
+    return mcq("What is \\(\\sqrt{("+v5+" - "+h+")^2}\\) in simplest form?",
+      "\\(|"+v5+" - "+h+"|\\)",
+      ["\\("+v5+" - "+h+"\\)","\\("+h+" - "+v5+"\\)","\\(\\pm ("+v5+" - "+h+")\\)"],
+      "The square root of a square is the absolute value of the expression inside, because that expression can be positive or negative depending on \\("+v5+"\\). So \\(\\sqrt{("+v5+" - "+h+")^2} = <b>|"+v5+" - "+h+"|</b>\\).",
+      {v:v5,h:h,shape:shape});
+  }
+  var k6=ri(3,12);
+  return mcq("Which statement is true?",
+    "\\(\\sqrt{(-"+k6+")^2} = "+k6+"\\)",
+    ["\\(\\sqrt{(-"+k6+")^2} = -"+k6+"\\)","\\(\\sqrt{"+(k6*k6)+"} = \\pm "+k6+"\\)","\\((-"+k6+")^2 = "+(-(k6*k6))+"\\)"],
+    "Check each claim. Squaring first, \\((-"+k6+")^2 = "+(k6*k6)+"\\), and the principal root of \\("+(k6*k6)+"\\) is \\("+k6+"\\) (never negative, and a single value, not a plus-or-minus pair). Also \\((-"+k6+")^2\\) is positive \\("+(k6*k6)+"\\), not \\("+(-(k6*k6))+"\\). So the true statement is <b>\\(\\sqrt{(-"+k6+")^2} = "+k6+"\\)</b>.",
+    {k:k6,shape:shape});
+});
+
+/* ---------- 1.12: values for which a radical expression is defined (L2) ---------- */
+E("u4-defined-values",4,["1.12"],2,"gen",function(){
+  var shape=pick(["pos","pos","neg","denom"]);
+  var c0=pick([-6,-5,-4,-3,-2,-1,1,2,3,4,5,6]);
+  if(shape==="pos"){
+    var a=pick([1,2,3,4]);
+    var rad="\\sqrt{"+(a===1?"x":a+"x")+u4sgn(-a*c0)+"}";
+    var steps=(a===1)?("x"+u4sgn(-a*c0)+" &\\geq 0 \\\\ x &\\geq "+c0)
+      :((a+"x")+u4sgn(-a*c0)+" &\\geq 0 \\\\ "+a+"x &\\geq "+(a*c0)+" \\\\ x &\\geq "+c0);
+    return mcq("For which values of \\(x\\) is the expression \\("+rad+"\\) defined?",
+      "\\(x \\geq "+c0+"\\)",
+      ["\\(x \\leq "+c0+"\\)","\\(x \\geq "+(-c0)+"\\)","\\(x > "+c0+"\\)"],
+      "A square root is defined when its radicand is non-negative: \\[ \\begin{aligned} "+steps+" \\end{aligned} \\] So the expression is defined for <b>\\(x \\geq "+c0+"\\)</b>. The endpoint is included because a square root of zero is zero.",
+      {a:a,c0:c0,shape:shape});
+  }
+  if(shape==="neg"){
+    var a2=pick([1,2,3,4]);
+    var rad2="\\sqrt{"+(a2*c0)+(a2===1?" - x":" - "+a2+"x")+"}";
+    var steps2=(a2===1)?((a2*c0)+" - x &\\geq 0 \\\\ -x &\\geq "+(-a2*c0)+" \\\\ x &\\leq "+c0)
+      :((a2*c0)+" - "+a2+"x &\\geq 0 \\\\ -"+a2+"x &\\geq "+(-a2*c0)+" \\\\ x &\\leq "+c0);
+    return mcq("For which values of \\(x\\) is the expression \\("+rad2+"\\) defined?",
+      "\\(x \\leq "+c0+"\\)",
+      ["\\(x \\geq "+c0+"\\)","\\(x \\leq "+(-c0)+"\\)","\\(x < "+c0+"\\)"],
+      "The radicand must be non-negative. Dividing by a negative number reverses the inequality: \\[ \\begin{aligned} "+steps2+" \\end{aligned} \\] So the expression is defined for <b>\\(x \\leq "+c0+"\\)</b>.",
+      {a:a2,c0:c0,shape:shape});
+  }
+  var n=ri(2,9);
+  var expr="\\frac{"+n+"}{\\sqrt{x"+u4sgn(-c0)+"}}";
+  return mcq("For which values of \\(x\\) is the expression \\("+expr+"\\) defined?",
+    "\\(x > "+c0+"\\)",
+    ["\\(x \\geq "+c0+"\\)","\\(x < "+c0+"\\)","\\(x > "+(-c0)+"\\)"],
+    "The radicand sits in a denominator, so it must be strictly positive: zero would make the denominator zero, and a negative radicand has no real square root. \\[ \\begin{aligned} x"+u4sgn(-c0)+" &> 0 \\\\ x &> "+c0+" \\end{aligned} \\] So the expression is defined for <b>\\(x > "+c0+"\\)</b>.",
+    {n:n,c0:c0,shape:shape});
+});
+
+/* ---------- 1.13: simplify with operations on radicals (L2) ---------- */
+E("u4-simplify-ops",4,["1.13"],2,"gen",function(){
+  var shape=pick(["add","add","product","conjugate","binomSquare","varAdd"]);
+  if(shape==="add"){
+    var b=pick([2,3,5,6,7,10]),a1=ri(2,6),a2=ri(2,6),t=0;
+    while(a2===a1&&t<40){a2=ri(2,6);t++;}
+    var N1=a1*a1*b,N2=a2*a2*b;
+    var cor=u4mixS(a1+a2,b,2);
+    var sm=u4simp(N1+N2);
+    var sumOpt=(sm[1]===1)?(""+sm[0]):u4mixS(sm[0],sm[1],2);
+    var cands=[u4mixS(a1*a2,b,2),sumOpt,u4mixS(Math.abs(a1-a2),b,2),u4mixS(a1+a2+1,b,2)];
+    return mcq("Simplify \\(\\sqrt{"+N1+"} + \\sqrt{"+N2+"}\\).",
+      u4wrap(cor),u4dis(cor,cands,3).map(u4wrap),
+      "Simplify each radical first, then add the like radicals: \\[ \\begin{aligned} \\sqrt{"+N1+"} + \\sqrt{"+N2+"} &= "+u4mixS(a1,b,2)+" + "+u4mixS(a2,b,2)+" \\\\ &= "+cor+" \\end{aligned} \\] Radicals cannot be added by adding their radicands. The simplified sum is <b>"+u4wrap(cor)+"</b>\\).",
+      {a1:a1,a2:a2,b:b,shape:shape});
+  }
+  if(shape==="product"){
+    var a=ri(2,5),bb=ri(2,5);
+    var m=pick([2,3,5,6,7,10,11,14,15]),n=pick([2,3,5,6,7,10,11,14,15].filter(function(z){return z!==m;}));
+    var smB=u4simp(m*n);
+    var corB=(smB[1]===1)?(""+(a*bb*smB[0])):u4mixS(a*bb*smB[0],smB[1],2);
+    function rawS(coef,rad){return coef+"\\sqrt{"+rad+"}";}
+    var candsB=[rawS(a+bb,m*n),rawS(a*bb,m+n),rawS(a*bb,m*n),rawS((a+1)*bb,m*n),rawS(a*bb+1,m*n)];
+    var stepsB="\\[ \\begin{aligned} "+a+"\\sqrt{"+m+"} \\times "+bb+"\\sqrt{"+n+"} &= "+(a*bb)+"\\sqrt{"+(m*n)+"} \\\\ &= "+corB+" \\end{aligned} \\]";
+    return mcq("Simplify \\("+a+"\\sqrt{"+m+"} \\times "+bb+"\\sqrt{"+n+"}\\). Give the answer in simplest form.",
+      u4wrap(corB),u4dis(corB,candsB,3).map(u4wrap),
+      "Multiply the coefficients together and the radicands together, then simplify the result: "+stepsB+" So the product is <b>"+u4wrap(corB)+"</b>\\).",
+      {a:a,bb:bb,m:m,n:n,shape:shape});
+  }
+  if(shape==="conjugate"){
+    var mm=pick([5,6,7,10,11,13,14,15,18,20,21,22]),nn=pick([2,3,5,6,7,10,11,13]),t2=0;
+    while(nn>=mm&&t2<40){nn=pick([2,3,5,6,7,10,11,13]);t2++;}
+    return mcq("Expand and simplify \\((\\sqrt{"+mm+"} + \\sqrt{"+nn+"})(\\sqrt{"+mm+"} - \\sqrt{"+nn+"})\\).",
+      ""+(mm-nn),[""+(mm+nn),""+(nn-mm),""+(mm*nn)],
+      "This is a conjugate pair, so the product is a difference of squares and the middle terms cancel: \\[ \\begin{aligned} (\\sqrt{"+mm+"} + \\sqrt{"+nn+"})(\\sqrt{"+mm+"} - \\sqrt{"+nn+"}) &= (\\sqrt{"+mm+"})^2 - (\\sqrt{"+nn+"})^2 \\\\ &= "+mm+" - "+nn+" \\\\ &= "+(mm-nn)+" \\end{aligned} \\] The product is <b>"+(mm-nn)+"</b>.",
+      {mm:mm,nn:nn,shape:shape});
+  }
+  if(shape==="binomSquare"){
+    var p=ri(2,6),q=pick([2,3,5,6,7,10,11,13]);
+    var corC=""+(p*p+q)+" + "+(2*p)+"\\sqrt{"+q+"}";
+    var candsC=[""+(p*p+q),""+(p*p+q)+" + "+p+"\\sqrt{"+q+"}",""+(p*p)+" + "+(2*p)+"\\sqrt{"+q+"}",""+(p*p+q)+" + "+(2*p)+"\\sqrt{"+(q+2)+"}"];
+    return mcq("Expand and simplify \\(("+p+" + \\sqrt{"+q+"})^2\\).",
+      u4wrap(corC),u4dis(corC,candsC,3).map(u4wrap),
+      "Squaring a binomial produces a middle term; the expression is not squared term by term: \\[ \\begin{aligned} ("+p+" + \\sqrt{"+q+"})^2 &= "+p+"^2 + 2 \\times "+p+" \\times \\sqrt{"+q+"} + (\\sqrt{"+q+"})^2 \\\\ &= "+(p*p)+" + "+(2*p)+"\\sqrt{"+q+"} + "+q+" \\\\ &= "+corC+" \\end{aligned} \\] So the expansion is <b>"+u4wrap(corC)+"</b>\\).",
+      {p:p,q:q,shape:shape});
+  }
+  var bD=pick([2,3,5,6]),d1=ri(2,5),d2=ri(2,5),t3=0;
+  while(d2===d1&&t3<40){d2=ri(2,5);t3++;}
+  var c1=d1*d1*bD,c2=d2*d2*bD;
+  var corD=(d1+d2)+"\\sqrt{"+bD+"x}";
+  var candsD=[(d1*d2)+"\\sqrt{"+bD+"x}",(d1+d2)+"\\sqrt{"+bD+"}",Math.abs(d1-d2)+"\\sqrt{"+bD+"x}",(d1+d2)+"\\sqrt{"+(bD+1)+"x}"];
+  return mcq("Simplify \\(\\sqrt{"+c1+"x} + \\sqrt{"+c2+"x}\\). Assume \\(x \\geq 0\\).",
+    u4wrap(corD),u4dis(corD,candsD,3).map(u4wrap),
+    "Simplify each radical first: \\(\\sqrt{"+c1+"x} = "+d1+"\\sqrt{"+bD+"x}\\) and \\(\\sqrt{"+c2+"x} = "+d2+"\\sqrt{"+bD+"x}\\). These are like radicals, so their coefficients add: \\[ \\begin{aligned} \\sqrt{"+c1+"x} + \\sqrt{"+c2+"x} &= "+d1+"\\sqrt{"+bD+"x} + "+d2+"\\sqrt{"+bD+"x} \\\\ &= "+corD+" \\end{aligned} \\] The simplified sum is <b>"+u4wrap(corD)+"</b>\\).",
+    {d1:d1,d2:d2,b:bD,shape:shape});
+});
+
+/* ---------- 1.14: rationalize a monomial or binomial denominator (L2) ---------- */
+E("u4-rationalize",4,["1.14"],2,"gen",function(){
+  var shape=pick(["mono","monoCoef","binom","twoRad"]);
+  if(shape==="mono"||shape==="monoCoef"){
+    var n=ri(2,9),m=pick([2,3,5,6,7,10]);
+    var a=(shape==="mono")?1:ri(2,5);
+    var den=(a===1)?("\\sqrt{"+m+"}"):(a+"\\sqrt{"+m+"}");
+    var D=a*m,g=u4gcd(n,D),n1=n/g,D1=D/g;
+    var cor=(D1===1)?(n1+"\\sqrt{"+m+"}"):("\\frac{"+n1+"\\sqrt{"+m+"}}{"+D1+"}");
+    var cands=["\\frac{"+n+"\\sqrt{"+m+"}}{"+(D*m)+"}","\\frac{\\sqrt{"+(n*m)+"}}{"+D+"}","\\frac{"+n+"}{"+D+"}","\\frac{"+(n+1)+"\\sqrt{"+m+"}}{"+D+"}"];
+    return mcq("Rationalize the denominator of \\(\\frac{"+n+"}{"+den+"}\\) and simplify.",
+      u4wrap(cor),u4dis(cor,cands,3).map(u4wrap),
+      "Multiply the numerator and denominator by \\(\\sqrt{"+m+"}\\), which makes the denominator rational: \\[ \\begin{aligned} \\frac{"+n+"}{"+den+"} &= \\frac{"+n+"\\sqrt{"+m+"}}{"+D+"} \\\\ &= "+cor+" \\end{aligned} \\] So the rationalized form is <b>"+u4wrap(cor)+"</b>\\).",
+      {n:n,m:m,a:a,shape:shape});
+  }
+  if(shape==="binom"){
+    var a2=ri(2,6),b2=pick([2,3,5,6,7,10,11,13].filter(function(z){return z<a2*a2&&z!==a2;})),n2=ri(1,6);
+    var D2=a2*a2-b2,g2=u4gcd(n2,D2),n2r=n2/g2,D2r=D2/g2;
+    var numCore="("+a2+" - \\sqrt{"+b2+"})";
+    var cor2=(D2r===1)?((n2r===1?"":n2r)+numCore):("\\frac{"+(n2r===1?"":n2r)+numCore+"}{"+D2r+"}");
+    var npre=(n2===1?"":n2);
+    var cands2=["\\frac{"+npre+"("+a2+" + \\sqrt{"+b2+"})}{"+D2+"}",
+      "\\frac{"+npre+numCore+"}{"+(a2*a2+b2)+"}",
+      "\\frac{"+n2+"\\sqrt{"+b2+"}}{"+b2+" + "+a2+"\\sqrt{"+b2+"}}",
+      "\\frac{"+npre+numCore+"}{"+(D2*D2)+"}"];
+    return mcq("Rationalize the denominator of \\(\\frac{"+n2+"}{"+a2+" + \\sqrt{"+b2+"}}\\) and simplify.",
+      u4wrap(cor2),u4dis(cor2,cands2,3).map(u4wrap),
+      "Multiply the numerator and denominator by the conjugate \\("+a2+" - \\sqrt{"+b2+"}\\). The denominator becomes a difference of squares: \\[ \\begin{aligned} \\frac{"+n2+"}{"+a2+" + \\sqrt{"+b2+"}} &= \\frac{"+n2+numCore+"}{("+a2+")^2 - (\\sqrt{"+b2+"})^2} \\\\ &= \\frac{"+n2+numCore+"}{"+D2+"} \\\\ &= "+cor2+" \\end{aligned} \\] So the rationalized form is <b>"+u4wrap(cor2)+"</b>\\).",
+      {a:a2,b:b2,n:n2,shape:shape});
+  }
+  var A=pick([5,6,7,10,11,13,14,15]),B=pick([2,3,5,6,7,10].filter(function(z){return z<A;})),n3=ri(1,6);
+  var D3=A-B,g3=u4gcd(n3,D3),n3r=n3/g3,D3r=D3/g3;
+  var numC="(\\sqrt{"+A+"} + \\sqrt{"+B+"})";
+  var cor3=(D3r===1)?((n3r===1?"":n3r)+numC):("\\frac{"+(n3r===1?"":n3r)+numC+"}{"+D3r+"}");
+  var npre3=(n3===1?"":n3);
+  var cands3=["\\frac{"+npre3+"(\\sqrt{"+A+"} - \\sqrt{"+B+"})}{"+D3+"}",
+    "\\frac{"+npre3+numC+"}{"+(A+B)+"}",
+    "\\frac{"+npre3+numC+"}{"+(D3*D3)+"}",
+    "\\frac{"+npre3+"(\\sqrt{"+A+"} - \\sqrt{"+B+"})}{"+(A+B)+"}"];
+  return mcq("Rationalize the denominator of \\(\\frac{"+n3+"}{\\sqrt{"+A+"} - \\sqrt{"+B+"}}\\) and simplify.",
+    u4wrap(cor3),u4dis(cor3,cands3,3).map(u4wrap),
+    "Multiply the numerator and denominator by the conjugate \\(\\sqrt{"+A+"} + \\sqrt{"+B+"}\\). The denominator becomes a difference of squares: \\[ \\begin{aligned} \\frac{"+n3+"}{\\sqrt{"+A+"} - \\sqrt{"+B+"}} &= \\frac{"+n3+numC+"}{(\\sqrt{"+A+"})^2 - (\\sqrt{"+B+"})^2} \\\\ &= \\frac{"+n3+numC+"}{"+D3+"} \\\\ &= "+cor3+" \\end{aligned} \\] So the rationalized form is <b>"+u4wrap(cor3)+"</b>\\).",
+    {A:A,B:B,n:n3,shape:shape});
+});
+
+/* ---------- 1.16 + 1.17: restrictions and solving radical equations (L2) ---------- */
+E("u4-solve-radical",4,["1.16","1.17"],2,"gen",function(){
+  var shape=pick(["basic","linear","isolated","twoRad"]);
+  if(shape==="basic"){
+    var b=pick([-9,-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9,11,13,15]),c=ri(2,9);
+    var x=c*c-b;
+    return numq("Solve the equation \\(\\sqrt{x"+u4sgn(b)+"} = "+c+"\\).",
+      x,0.01,
+      "Restriction: the radicand must be non-negative, so \\(x \\geq "+(-b)+"\\). Square both sides and solve: \\[ \\begin{aligned} \\sqrt{x"+u4sgn(b)+"} &= "+c+" \\\\ x"+u4sgn(b)+" &= "+(c*c)+" \\\\ x &= "+x+" \\end{aligned} \\] Check: \\(\\sqrt{"+x+u4sgn(b)+"} = \\sqrt{"+(c*c)+"} = "+c+"\\), so the root is <b>\\(x = "+x+"\\)</b>.",
+      {b:b,c:c,shape:shape});
+  }
+  if(shape==="linear"){
+    var a=pick([2,3,4]),x0=ri(3,15),c2=ri(2,8);
+    var Bc=c2*c2-a*x0;
+    return numq("Solve the equation \\(\\sqrt{"+a+"x"+u4sgn(Bc)+"} = "+c2+"\\).",
+      x0,0.01,
+      "Restriction: the radicand must be non-negative, so \\("+a+"x"+u4sgn(Bc)+" \\geq 0\\). Square both sides and solve: \\[ \\begin{aligned} \\sqrt{"+a+"x"+u4sgn(Bc)+"} &= "+c2+" \\\\ "+a+"x"+u4sgn(Bc)+" &= "+(c2*c2)+" \\\\ "+a+"x &= "+(a*x0)+" \\\\ x &= "+x0+" \\end{aligned} \\] Check: \\(\\sqrt{"+a+" \\times "+x0+u4sgn(Bc)+"} = \\sqrt{"+(c2*c2)+"} = "+c2+"\\), so the root is <b>\\(x = "+x0+"\\)</b>.",
+      {a:a,x0:x0,c:c2,shape:shape});
+  }
+  if(shape==="isolated"){
+    var p=ri(1,6),c3=ri(2,8),d=p+c3;
+    var b3=pick([-9,-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9,11,13,15]);
+    var x3=c3*c3-b3;
+    return numq("Solve the equation \\("+p+" + \\sqrt{x"+u4sgn(b3)+"} = "+d+"\\).",
+      x3,0.01,
+      "First isolate the radical. Restriction: the radicand must be non-negative, so \\(x \\geq "+(-b3)+"\\). \\[ \\begin{aligned} "+p+" + \\sqrt{x"+u4sgn(b3)+"} &= "+d+" \\\\ \\sqrt{x"+u4sgn(b3)+"} &= "+c3+" \\\\ x"+u4sgn(b3)+" &= "+(c3*c3)+" \\\\ x &= "+x3+" \\end{aligned} \\] Check: \\("+p+" + \\sqrt{"+x3+u4sgn(b3)+"} = "+p+" + "+c3+" = "+d+"\\), so the root is <b>\\(x = "+x3+"\\)</b>.",
+      {p:p,c:c3,b:b3,shape:shape});
+  }
+  var av=ri(1,9),bv=ri(1,9),xv=av+bv;
+  return numq("Solve the equation \\(\\sqrt{x + "+av+"} = \\sqrt{2x"+u4sgn(-bv)+"}\\).",
+    xv,0.01,
+    "Restrictions: both radicands must be non-negative, so \\(x \\geq "+(-av)+"\\) and \\(x \\geq "+fmt(bv/2,1)+"\\). Square both sides and solve: \\[ \\begin{aligned} \\sqrt{x + "+av+"} &= \\sqrt{2x"+u4sgn(-bv)+"} \\\\ x + "+av+" &= 2x"+u4sgn(-bv)+" \\\\ x &= "+xv+" \\end{aligned} \\] Check: both radicands equal \\("+(xv+av)+"\\), which is non-negative, so the root is <b>\\(x = "+xv+"\\)</b>.",
+    {a:av,b:bv,shape:shape});
+});
+
+/* ---------- 1.18: verify a claimed root by substitution (L2) ---------- */
+E("u4-verify-roots",4,["1.18"],2,"gen",function(){
+  var shape=pick(["simple","simple","validStmt","extrValue"]);
+  if(shape==="simple"){
+    var b=pick([-9,-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9,11,13,15]),c=ri(2,9);
+    var r=c*c-b;
+    return numq("A student solves \\(\\sqrt{x"+u4sgn(b)+"} = "+c+"\\) and claims the root is \\(x = "+r+"\\). To verify the claim, the student substitutes \\(x = "+r+"\\) into the <b>left side</b> of the original equation. What value does the left side give?",
+      c,0.01,
+      "Substitute into the original equation, not a squared version of it: \\[ \\begin{aligned} \\sqrt{"+r+u4sgn(b)+"} &= \\sqrt{"+(c*c)+"} \\\\ &= "+c+" \\end{aligned} \\] The left side gives <b>"+c+"</b>, which matches the right side, so the claim checks.",
+      {b:b,c:c,r:r,shape:shape});
+  }
+  var cc=ri(2,8),kk=ri(1,4),s=cc-kk,r2=2*cc+1-s,bb2=cc*cc-r2*s;
+  var eq="\\sqrt{x"+u4sgn(bb2)+"} = x - "+cc, kv=r2-cc;
+  if(shape==="validStmt"){
+    var corS="Substituting gives \\(\\sqrt{"+(kv*kv)+"} = "+kv+"\\) on the left and \\("+r2+" - "+cc+" = "+kv+"\\) on the right, so the value checks";
+    var candsS=["Substituting gives \\(\\sqrt{"+(kv*kv)+"} = "+(-kv)+"\\) on the left and \\("+r2+" - "+cc+" = "+kv+"\\) on the right, so the value checks",
+      "Substituting gives \\(\\sqrt{"+(kv*kv)+"} = "+kv+"\\) on the left and \\("+r2+" - "+cc+" = "+(-kv)+"\\) on the right, so the value checks",
+      "Substituting gives \\("+(kv*kv)+"\\) on the left and \\("+r2+" - "+cc+" = "+kv+"\\) on the right, so the value checks"];
+    return mcq("A student solves \\("+eq+"\\) and obtains \\(x = "+r2+"\\). Which statement shows the <b>correct verification</b> of this value?",
+      corS,u4dis(corS,candsS,3),
+      "Verification means substituting into the original equation and evaluating each side separately. The left side is \\(\\sqrt{"+r2+u4sgn(bb2)+"} = \\sqrt{"+(kv*kv)+"} = "+kv+"\\) (a square root is never negative), and the right side is \\("+r2+" - "+cc+" = "+kv+"\\). The two sides agree, so <b>\\(x = "+r2+"\\)</b> is verified as a root.",
+      {c:cc,s:s,r:r2,shape:shape});
+  }
+  return numq("A student solves \\("+eq+"\\) by squaring and lists \\(x = "+s+"\\) as a possible root. Substituting \\(x = "+s+"\\) into the <b>left side</b> of the original equation gives what value?",
+    kk,0.01,
+    "Substitute into the original equation: \\[ \\begin{aligned} \\sqrt{"+s+u4sgn(bb2)+"} &= \\sqrt{"+(kk*kk)+"} \\\\ &= "+kk+" \\end{aligned} \\] The left side gives <b>"+kk+"</b>. The right side at \\(x = "+s+"\\) is \\("+s+" - "+cc+" = "+(-kk)+"\\), which is different, so this substitution shows \\(x = "+s+"\\) is not a root.",
+    {c:cc,s:s,r:r2,shape:shape});
+});
+
+/* ---------- 1.15: why the conjugate rationalizes (difference of squares) (L3) ---------- */
+E("u4-conjugate-why",4,["1.15"],3,"gen",function(){
+  var shape=pick(["whyConj","whyConj","claim"]);
+  if(shape==="whyConj"){
+    var b=pick([2,3,5,6,7,10,11,13]);
+    var a=pick([2,3,4,5,6,7].filter(function(z){return z*z>b;}));
+    var D=a*a-b;
+    var cor="The product \\(("+a+")^2 - (\\sqrt{"+b+"})^2 = "+(a*a)+" - "+b+" = "+D+"\\) is a difference of squares, so it is a rational number";
+    var cands=["The terms \\(+\\sqrt{"+b+"}\\) and \\(-\\sqrt{"+b+"}\\) add to zero, so the denominator becomes \\("+a+" + "+a+" = "+(2*a)+"\\) with no radical",
+      "The product \\(("+a+")^2 + (\\sqrt{"+b+"})^2 = "+(a*a)+" + "+b+" = "+(a*a+b)+"\\) is a sum of squares, so it is a rational number",
+      "The factor \\("+a+" - \\sqrt{"+b+"}\\) is the reciprocal of \\("+a+" + \\sqrt{"+b+"}\\), so their product is \\(1\\) and the radical disappears"];
+    return mcq("To rationalize the denominator of \\(\\frac{1}{"+a+" + \\sqrt{"+b+"}}\\), the numerator and denominator are multiplied by the conjugate \\("+a+" - \\sqrt{"+b+"}\\). Why does this remove the radical from the denominator?",
+      cor,u4dis(cor,cands,3),
+      "Multiply the pair out: \\(("+a+" + \\sqrt{"+b+"})("+a+" - \\sqrt{"+b+"}) = "+a+"^2 - "+a+"\\sqrt{"+b+"} + "+a+"\\sqrt{"+b+"} - "+b+"\\). The two middle terms cancel, leaving the difference of squares \\("+a+"^2 - "+b+" = "+D+"\\), a rational number with no radical. The conjugate works precisely because a product of the form \\((p + q)(p - q)\\) collapses to \\(p^2 - q^2\\).",
+      {a:a,b:b,shape:shape});
+  }
+  var A2=pick([2,3,5,6,7,10]),B2=pick([2,3,5,6,7,10].filter(function(z){return z!==A2;})),n2=ri(1,6);
+  var corB="\\("+(A2+B2)+" + 2\\sqrt{"+(A2*B2)+"}\\)";
+  var candsB=["\\("+(A2+B2)+"\\)","\\("+(A2-B2)+"\\)","\\("+(A2+B2)+" - 2\\sqrt{"+(A2*B2)+"}\\)"];
+  return mcq("A student multiplies the numerator and denominator of \\(\\frac{"+n2+"}{\\sqrt{"+A2+"} + \\sqrt{"+B2+"}}\\) by \\(\\sqrt{"+A2+"} + \\sqrt{"+B2+"}\\), claiming the new denominator will be rational. What is the new denominator actually equal to?",
+    corB,u4dis(corB,candsB,3).map(function(z){return z;}),
+    "Squaring the binomial keeps a middle term: \\((\\sqrt{"+A2+"} + \\sqrt{"+B2+"})^2 = "+A2+" + 2\\sqrt{"+A2+" \\times "+B2+"} + "+B2+" = "+(A2+B2)+" + 2\\sqrt{"+(A2*B2)+"}\\), which still contains a radical, so the claim fails. The conjugate \\(\\sqrt{"+A2+"} - \\sqrt{"+B2+"}\\) is the multiplier that works, because its product with the denominator is the difference of squares \\("+A2+" - "+B2+" = "+(A2-B2)+"\\), a rational number.",
+    {A:A2,B:B2,n:n2,shape:shape});
+});
+
+/* ---------- 1.19: why a root from squaring can be extraneous (L3) ---------- */
+E("u4-extraneous-why",4,["1.19"],3,"gen",function(){
+  var c=ri(2,8),k=ri(1,4),s=c-k,r=2*c+1-s,b=c*c-r*s;
+  var eq="\\sqrt{x"+u4sgn(b)+"} = x - "+c;
+  var shape=pick(["why","why","step","which"]);
+  if(shape==="why"){
+    var cor="At \\(x = "+s+"\\), the right side is \\("+s+" - "+c+" = "+(-k)+"\\), which is negative, but a square root is never negative, so the two sides cannot be equal";
+    var cands=["At \\(x = "+s+"\\), the radicand \\(x"+u4sgn(b)+"\\) is negative, so the square root is undefined there",
+      "Squaring both sides is never a valid step, so both values found this way have to be thrown out",
+      "The value \\(x = "+s+"\\) does not satisfy the squared equation \\(x"+u4sgn(b)+" = (x - "+c+")^2\\)"];
+    return mcq("Solving \\("+eq+"\\) by squaring both sides leads to \\(x = "+r+"\\) and \\(x = "+s+"\\). The value \\(x = "+s+"\\) is not a solution of the original equation. Why not?",
+      cor,u4dis(cor,cands,3),
+      "Check \\(x = "+s+"\\) in the original equation: the left side is \\(\\sqrt{"+s+u4sgn(b)+"} = \\sqrt{"+(k*k)+"} = "+k+"\\) (the radicand there is positive), while the right side is \\("+s+" - "+c+" = "+(-k)+"\\). Squaring can produce values that solve the squared equation but fail the original, because the squared equation cannot tell \\("+k+"\\) from \\("+(-k)+"\\) on the right side. Only \\(x = "+r+"\\) checks.",
+      {c:c,k:k,s:s,r:r,shape:shape});
+  }
+  if(shape==="step"){
+    var cor2="When both sides are squared, because the squared equation also admits roots of the equation with the right side negated";
+    var cands2=["When the radical is isolated on one side, since moving terms across the equals sign changes the solution set of the equation",
+      "When the resulting quadratic is factored, since factoring a quadratic can introduce values that were not there before",
+      "When the final answers are checked by substitution, since the check itself can create values that fail the original equation"];
+    return mcq("When an equation such as \\("+eq+"\\) is solved, an extraneous root can appear. At which step does it enter?",
+      cor2,u4dis(cor2,cands2,3),
+      "Squaring is the step that can enlarge the solution set: the squared equation \\(x"+u4sgn(b)+" = (x - "+c+")^2\\) is satisfied not only by roots of the original equation but also by roots of \\(\\sqrt{x"+u4sgn(b)+"} = -(x - "+c+")\\). Isolating and factoring preserve the solution set, and checking only filters values out. That is why every root is checked in the original equation.",
+      {c:c,k:k,s:s,r:r,shape:shape});
+  }
+  return mcq("Solving \\("+eq+"\\) by squaring gives \\(x = "+r+"\\) or \\(x = "+s+"\\). Which value is extraneous?",
+    ""+s,[""+r,"Both values","Neither value"],
+    "Substitute each value into the original equation. At \\(x = "+r+"\\): the left side is \\(\\sqrt{"+(r+b)+"} = \\sqrt{"+((r-c)*(r-c))+"} = "+(r-c)+"\\) and the right side is \\("+r+" - "+c+" = "+(r-c)+"\\), so it checks. At \\(x = "+s+"\\): the left side is \\(\\sqrt{"+(k*k)+"} = "+k+"\\) but the right side is \\("+s+" - "+c+" = "+(-k)+"\\), so it fails. The extraneous value is <b>\\(x = "+s+"\\)</b>.",
+    {c:c,k:k,s:s,r:r,shape:shape});
+});
+
+/* ---------- 1.20: model a situation with a radical equation (L3) ---------- */
+E("u4-model-radical",4,["1.20"],3,"gen",function(){
+  var shape=pick(["pendulum","pendulum","fallTime","fallHeight","horizon","tank"]);
+  if(shape==="pendulum"){
+    var penCtx=[
+      {key:"longcase clock",text:"A pendulum in a longcase clock",Ts:[1.0,1.4,2.0]},
+      {key:"science display",text:"A pendulum on a science centre display",Ts:[1.6,2.0,2.4,2.8,3.0]},
+      {key:"playground swing",text:"A playground swing, modelled as a pendulum",Ts:[1.8,2.2,2.6,3.0]}];
+    var pc=pick(penCtx),T=pick(pc.Ts);
+    var L=9.8*Math.pow(T/(2*Math.PI),2);
+    return numq(pc.text+" has a period of "+fmt(T,1)+" s. The period is modelled by \\(T = 2\\pi\\sqrt{\\frac{L}{9.8}}\\), where \\(L\\) is the length in metres. Find the length, in metres.",
+      L,0.03,
+      "Substitute \\(T = "+fmt(T,1)+"\\) and solve the radical equation for \\(L\\): \\[ \\begin{aligned} "+fmt(T,1)+" &= 2\\pi\\sqrt{\\frac{L}{9.8}} \\\\ \\frac{"+fmt(T,1)+"}{2\\pi} &= \\sqrt{\\frac{L}{9.8}} \\\\ \\left(\\frac{"+fmt(T,1)+"}{2\\pi}\\right)^2 &= \\frac{L}{9.8} \\\\ L &= 9.8 \\times \\left(\\frac{"+fmt(T,1)+"}{2\\pi}\\right)^2 \\\\ &\\approx "+fmt(L,2)+" \\end{aligned} \\] The length is about <b>"+fmt(L,2)+" m</b>.",
+      {ctx:"pendulum: "+pc.key,T:T,L:Math.round(L*1000)/1000});
+  }
+  var fallCtx=[
+    {key:"cliff",text:"A stone is dropped from a cliff",hs:[20,30,40,50,65,80],ts:[2,2.5,3,3.5,4]},
+    {key:"scaffold",text:"A wrench slips from the top of a scaffold",hs:[5,10,15,20,25],ts:[1,1.5,2]},
+    {key:"bridge",text:"A ball is dropped from a bridge deck",hs:[15,20,25,30,40,50],ts:[1.5,2,2.5,3]}];
+  if(shape==="fallTime"){
+    var fc=pick(fallCtx),h=pick(fc.hs),t=Math.sqrt(2*h/9.8);
+    return numq(fc.text+" that is "+h+" m above the ground. The time to reach the ground is modelled by \\(t = \\sqrt{\\frac{2h}{9.8}}\\), with \\(t\\) in seconds and \\(h\\) in metres. Find the time, in seconds.",
+      t,0.05,
+      "Substitute \\(h = "+h+"\\) and evaluate: \\[ \\begin{aligned} t &= \\sqrt{\\frac{2 \\times "+h+"}{9.8}} \\\\ &= \\sqrt{"+fmt(2*h/9.8,2)+"} \\\\ &\\approx "+fmt(t,2)+" \\end{aligned} \\] The fall takes about <b>"+fmt(t,2)+" s</b>.",
+      {ctx:"fall: "+fc.key,h:h,t:Math.round(t*100)/100});
+  }
+  if(shape==="fallHeight"){
+    var fc2=pick(fallCtx),t2=pick(fc2.ts),h2=4.9*t2*t2;
+    return numq(fc2.text+" and takes "+fmt(t2,1)+" s to reach the ground. The fall time is modelled by \\(t = \\sqrt{\\frac{2h}{9.8}}\\), with \\(t\\) in seconds and \\(h\\) in metres. Find the height, in metres.",
+      h2,0.5,
+      "Substitute \\(t = "+fmt(t2,1)+"\\) and solve the radical equation for \\(h\\): \\[ \\begin{aligned} "+fmt(t2,1)+" &= \\sqrt{\\frac{2h}{9.8}} \\\\ "+fmt(t2*t2,2)+" &= \\frac{2h}{9.8} \\\\ h &= \\frac{9.8 \\times "+fmt(t2*t2,2)+"}{2} \\\\ &= "+fmt(h2,1)+" \\end{aligned} \\] The height is about <b>"+fmt(h2,1)+" m</b>.",
+      {ctx:"fall: "+fc2.key,t:t2,h:Math.round(h2*10)/10});
+  }
+  if(shape==="horizon"){
+    var horCtx=[
+      {key:"ship deck",text:"from the deck of a ship",hs:[4,9,16,25]},
+      {key:"lighthouse",text:"from a lighthouse platform",hs:[16,25,36,49]},
+      {key:"cliff top",text:"from a seaside cliff top",hs:[25,36,49,64,81,100]}];
+    var hc=pick(horCtx),hh=pick(hc.hs),dd=3.57*Math.sqrt(hh);
+    return numq("An observer "+hc.text+" is "+hh+" m above the sea. The distance to the horizon is modelled by \\(d = 3.57\\sqrt{h}\\), where \\(h\\) is the height in metres and \\(d\\) is the distance in kilometres. Find the distance to the horizon, in kilometres.",
+      dd,0.15,
+      "Substitute \\(h = "+hh+"\\) and evaluate: \\[ \\begin{aligned} d &= 3.57\\sqrt{"+hh+"} \\\\ &= 3.57 \\times "+fmt(Math.sqrt(hh),1)+" \\\\ &= "+fmt(dd,2)+" \\end{aligned} \\] The distance to the horizon is about <b>"+fmt(dd,2)+" km</b>.",
+      {ctx:"horizon: "+hc.key,h:hh,d:Math.round(dd*10)/10});
+  }
+  var tankCtx=[
+    {key:"rain barrel",text:"a rain barrel",hs:[0.5,1,1.5]},
+    {key:"storage tank",text:"a storage tank",hs:[1,2,3,4,5]}];
+  var tc=pick(tankCtx),th=pick(tc.hs),tv=Math.sqrt(19.6*th);
+  return numq("Water drains through a hole near the bottom of "+tc.text+". The speed of the water leaving the hole is modelled by \\(v = \\sqrt{19.6h}\\), where \\(h\\) is the depth of the hole below the surface in metres and \\(v\\) is the speed in metres per second. If the hole is "+fmt(th,1)+" m below the surface, find the speed, in metres per second.",
+    tv,0.1,
+    "Substitute \\(h = "+fmt(th,1)+"\\) and evaluate: \\[ \\begin{aligned} v &= \\sqrt{19.6 \\times "+fmt(th,1)+"} \\\\ &= \\sqrt{"+fmt(19.6*th,1)+"} \\\\ &\\approx "+fmt(tv,2)+" \\end{aligned} \\] The speed is about <b>"+fmt(tv,2)+" m/s</b>.",
+    {ctx:"tank: "+tc.key,h:th,v:Math.round(tv*100)/100});
+});
 /* BANK-SRC-END */
 </script>
 
