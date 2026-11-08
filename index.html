@@ -1636,9 +1636,9 @@ E("u2-cts-reasoning",2,["4.42"],2,"var",varset([
     var facS="(x"+(h>0?" + "+h:" - "+(-h))+")^2";
     return mcq("A student begins completing the square on \\("+u2QuadB(b)+"\\) by adding \\("+h2+"\\). Why is \\("+h2+"\\) the number that is added?",
       "Because half of the coefficient of \\(x\\) is \\("+h+"\\), and adding its square makes \\("+u2QuadB(b)+" + "+h2+"\\) a perfect square: it factors as \\("+facS+"\\).",
-      ["To eliminate the \\(x\\) term so that the expression is left with only two terms.",
-       "To make the constant term of the expression equal to the coefficient of \\(x\\).",
-       "Because the square of the full coefficient of \\(x\\) must always be added first."],
+      ["To eliminate the \\(x\\) term from the expression, so that the work is left with only two terms, \\(x^2\\) and a constant, to deal with.",
+       "To make the constant term of the expression equal to the coefficient of \\(x\\), so the two middle values in the trinomial match each other exactly.",
+       "Because the square of the full coefficient of \\(x\\) must always be added first, before any other step in the method is carried out."],
       "Completing the square aims at the pattern \\((x + k)^2 = x^2 + 2kx + k^2\\). Matching \\(2k\\) with the coefficient \\("+b+"\\) gives \\(k = "+h+"\\), so the constant to add is \\(k^2 = "+h2+"\\). With it added, the trinomial factors as \\("+facS+"\\).",
       {b:b});
   },
@@ -1646,9 +1646,9 @@ E("u2-cts-reasoning",2,["4.42"],2,"var",varset([
     var b=pick([2,4,6,8,-2,-4,-6,-8]), h=b/2, h2=h*h, c=pick([1,3,5,7,-2,-4]);
     return mcq("When \\(y = "+u2Std(1,b,c)+"\\) is rewritten by completing the square, the work includes the step \\(y = "+u2QuadB(b)+" + "+h2+" - "+h2+(c>0?" + "+c:" - "+(-c))+"\\). Why is \\("+h2+"\\) subtracted as well as added?",
       "Adding and subtracting the same number does not change the value of the expression, so the rewritten function is still equivalent to the original one.",
-      ["So that the y-intercept of the graph ends up in a different position.",
-       "Because a square has to be completed on both sides of the equation.",
-       "To make the constant term of the function a perfect square as well."],
+      ["So that the y-intercept of the graph ends up in a different position once the function has been rewritten and is graphed in its new form at the end of the work shown.",
+       "Because a square has to be completed on both sides of the equation, and the subtraction is what balances what was done on the left side.",
+       "To make the constant term of the function into a perfect square as well, so that both parts of the expression end up as perfect squares."],
       "The \\(+"+h2+"\\) is there to complete the square, but it changes the value of the expression unless it is balanced. Subtracting \\("+h2+"\\) again keeps the new expression equal to \\("+u2Std(1,b,c)+"\\) for every value of \\(x\\), which is what makes the rewriting a rewriting of the same function.",
       {b:b, c:c});
   },
@@ -1656,9 +1656,9 @@ E("u2-cts-reasoning",2,["4.42"],2,"var",varset([
     var a=pick([2,3]), B=pick([4,6,8]), c=pick([1,2,5,7]);
     return mcq("To rewrite \\(y = "+u2Std(a,a*B,c)+"\\) by completing the square, the first step gives \\(y = "+a+"\\left("+u2QuadB(B)+"\\right) + "+c+"\\). Why does the coefficient of \\(x^2\\) inside the brackets need to be 1?",
       "The pattern \\((x + k)^2 = x^2 + 2kx + k^2\\) has \\(x^2\\) with coefficient 1, so halving the \\(x\\)-coefficient gives \\(k\\) only when the \\(x^2\\) coefficient is 1.",
-      ["Because a perfect square trinomial can never have a coefficient in front of it.",
-       "So that the constant term can be factored out of the brackets at the same time.",
-       "Because the quadratic formula can only be used when the leading coefficient is 1."],
+      ["Because a perfect square trinomial can never have a coefficient in front of it when it is written out in factored form, so the coefficient must be removed first.",
+       "So that the constant term can be factored out of the brackets at the same time as the coefficient of \\(x^2\\) is factored out of them as well.",
+       "Because the quadratic formula can only be used when the leading coefficient is 1, as in \\(x^2 + bx + c\\), which is the standard form the formula needs."],
       "Inside the brackets the work matches the trinomial against \\((x + k)^2 = x^2 + 2kx + k^2\\), whose \\(x^2\\) coefficient is 1. Factoring out \\("+a+"\\) first makes the bracket a monic trinomial, so half of \\("+B+"\\) is the value of \\(k\\) to use. The constant \\("+c+"\\) is not part of the square being completed and stays outside.",
       {a:a, B:B});
   },
@@ -1670,9 +1670,9 @@ E("u2-cts-reasoning",2,["4.42"],2,"var",varset([
       "\\[ \\begin{aligned} y &= "+u2QuadB(b)+" + "+h2+" + \\left("+u2JoinSigned([c,-h2])+"\\right) \\\\ &= "+facS+(q>0?" + "+q:" - "+(-q))+" \\end{aligned} \\]"+
       "What does the last step, writing \\("+u2QuadB(b)+" + "+h2+"\\) as \\("+facS+"\\), accomplish?",
       "It puts the function in vertex form, so the vertex and the transformations of the graph can be read off directly.",
-      ["It solves the equation \\(y = 0\\) for the x-intercepts of the graph.",
-       "It removes the constant term from the function completely.",
-       "It factors the original trinomial into two different binomials."],
+      ["It solves the equation \\(y = 0\\) for the function, which gives the x-intercepts of the graph where it crosses the axis.",
+       "It removes the constant term from the function completely, so only the squared part of the function is left.",
+       "It factors the original trinomial into two different binomials, each with its own constant term in it."],
       "The trinomial \\("+u2QuadB(b)+" + "+h2+"\\) is a perfect square, equal to \\("+facS+"\\). Writing it that way turns the whole function into vertex form, \\(y = "+u2VS(1,-h,q)+"\\), and the vertex \\(("+(-h)+", "+q+")\\) can be read from it. Nothing has been solved and no term has been dropped.",
       {b:b, c:c});
   }
@@ -2456,27 +2456,27 @@ E("u3-derive-formula",3,["4.11"],3,"var",varset([
   function(){
     return mcq("When the square is completed on \\(x^2 + \\frac{b}{a}x\\), the number added to both sides is \\(\\frac{b^2}{4a^2}\\). Why is this the number that is added?",
       "It is the square of half the coefficient of \\(x\\): \\(\\left(\\frac{1}{2} \\cdot \\frac{b}{a}\\right)^2 = \\left(\\frac{b}{2a}\\right)^2\\)",
-      ["It is chosen so that the right side of the equation becomes zero",
+      ["It is chosen so that the right side of the equation becomes zero in the end",
        "It is the square of the constant term \\(c\\), adjusted by the value of \\(a\\)",
-       "It is twice the coefficient of \\(x\\), divided by the value of \\(a\\)"],
+       "It is twice the coefficient of \\(x\\), divided by the value of \\(a\\), giving \\(\\left(\\frac{2b}{a}\\right)^2\\)"],
       "To complete the square on \\(x^2 + px\\), add \\(\\left(\\frac{p}{2}\\right)^2\\). Here \\(p = \\frac{b}{a}\\), so the number added is \\(\\left(\\frac{b}{2a}\\right)^2 = \\frac{b^2}{4a^2}\\), and the left side becomes \\(\\left(x + \\frac{b}{2a}\\right)^2\\).",
       {v:2});
   },
   function(){
     return mcq("Near the end of deriving the quadratic formula, \\(\\left(x + \\frac{b}{2a}\\right)^2 = \\frac{b^2 - 4ac}{4a^2}\\) is rewritten as \\(x + \\frac{b}{2a} = \\pm \\frac{\\sqrt{b^2 - 4ac}}{2a}\\). Why does the \\(\\pm\\) symbol appear?",
       "Taking a square root gives two possibilities, because a number and its opposite have the same square",
-      ["Because the value of \\(a\\) can be positive or negative",
-       "To allow the formula to produce imaginary roots as well as real ones",
-       "Because the square root of a fraction must be written out twice"],
+      ["Because the value of \\(a\\) in the equation can be positive or negative, depending on the quadratic",
+       "To allow the formula to produce imaginary roots as well as real ones when they are needed in a problem",
+       "Because the square root of a fraction must be written out twice, once for each of its two parts"],
       "If \\(u^2 = w\\), then \\(u = \\sqrt{w}\\) or \\(u = -\\sqrt{w}\\): both values square to \\(w\\). The \\(\\pm\\) records both possibilities in one line. It has nothing to do with the sign of \\(a\\); the denominator \\(2a\\) comes from \\(\\sqrt{4a^2}\\) in the root of the right side.",
       {v:3});
   },
   function(){
     return mcq("The quadratic formula is derived by completing the square on \\(ax^2 + bx + c = 0\\). The derivation begins by dividing every term by \\(a\\). Which condition is required for this step?",
       "\\(a \\ne 0\\): division by zero is not possible, and a quadratic equation has \\(a \\ne 0\\) by definition",
-      ["\\(b \\ne 0\\), so that the equation still has an \\(x\\) term after the division",
-       "\\(c \\ne 0\\), so that the constant term can be moved to the right side",
-       "The discriminant must be positive, so that a real square root exists later"],
+      ["\\(b \\ne 0\\), so that the equation still has an \\(x\\) term after the division step is carried out",
+       "\\(c \\ne 0\\), so that the constant term can be moved to the right side of the equation afterwards",
+       "The discriminant must be positive, so that a real square root exists later in the derivation"],
       "Dividing by \\(a\\) is only meaningful when \\(a \\ne 0\\). That condition is automatic: if \\(a\\) were zero, the equation would be linear, not quadratic. The values of \\(b\\) and \\(c\\) may be zero, and the sign of the discriminant plays no part in this step.",
       {v:4});
   }
@@ -2511,10 +2511,10 @@ E("u3-error-analysis",3,["4.12"],3,"gen",function(){
     if(mut===4){ plus=""+(-r2); minus=""+(-r1); }
     else { plus=u3FracS(bv+sv,2*A); minus=(mut===3)?plus:u3FracS(bv-sv,2*A); }
     var L4="\\(x = "+plus+" \\text{ or } x = "+minus+"\\)";
-    var cat=["Line 1 writes the first term of the numerator as \\(b\\) instead of \\(-b\\)",
-             "Line 2 evaluates the discriminant \\(b^2 - 4ac\\) incorrectly",
-             "Line 3 uses the same sign for both roots when the \\(\\pm\\) is split",
-             "Line 4 changes the signs of the roots when the final answer is stated"];
+    var cat=["Line 1 writes the first term of the numerator as \\(b\\) instead of \\(-b\\) in the formula",
+             "Line 2 evaluates the discriminant \\(b^2 - 4ac\\) incorrectly when its value is worked out",
+             "Line 3 uses the same sign for both roots when the \\(\\pm\\) is split into two separate roots",
+             "Line 4 changes the signs of the roots when the final answer is stated at the very end"];
     var why=[ "In Line 1, the numerator must begin with \\(-b = "+base+"\\), since \\(b = "+B+"\\). Every later line is built on the wrong starting value.",
               "In Line 2, the discriminant is \\(b^2 - 4ac = "+D+"\\), not "+Dv+"; its square root is \\("+s+"\\), not "+sv+".",
               "In Line 3, splitting \\(\\pm\\) must produce one root with \\(+\\) and one with \\(-\\). Using \\(+\\) twice loses the second root.",
@@ -2544,9 +2544,9 @@ E("u3-error-analysis",3,["4.12"],3,"gen",function(){
     else if(mut2===4) LL4="The solutions are \\(x = "+Math.min(-t1,-t2)+"\\) and \\(x = "+Math.max(-t1,-t2)+"\\).";
     else LL4="The solutions are \\(x = "+Math.min(t1,t2)+"\\) and \\(x = "+Math.max(t1,t2)+"\\).";
     var cat2=["A sign in one factor in Line 1 is wrong, so the factored form does not expand to the original trinomial",
-              "Line 2 sets only one factor equal to zero, so one solution is lost",
-              "Line 3 changes a sign incorrectly when isolating \\(x\\) in one of the equations",
-              "Line 4 states both solutions with their signs reversed"];
+              "Line 2 sets only one factor equal to zero, so one of the two solutions is lost from the work shown",
+              "Line 3 changes a sign incorrectly when isolating \\(x\\) in one of the two equations in the student's work",
+              "Line 4 states both of the solutions with their signs reversed when they are written out in full here"];
     var why2=[ "In Line 1, the factor \\("+u3FacS(f2)+"\\) should be \\("+u3FacS(s2)+"\\) so that the factors expand to \\("+u3QuadS(1,B2,C2)+"\\). The later lines follow the incorrect factor consistently.",
                "In Line 2, the zero product property must be applied to both factors. Setting only one factor equal to zero loses the solution \\(x = "+prs[1].r+"\\).",
                "In Line 3, solving \\("+u3BinS(prs[1].r)+" = 0\\) gives \\(x = "+prs[1].r+"\\), not \\(x = "+(-prs[1].r)+"\\). The sign is changed incorrectly at that step.",
@@ -2568,10 +2568,10 @@ E("u3-error-analysis",3,["4.12"],3,"gen",function(){
                        : "\\(("+fi+")^2 = "+(s3*s3)+" \\Rightarrow "+fi+" = \\pm "+s3+"\\)";
     var ML4=(mut3===3) ? "\\(x = "+(-B3-s3)+" \\text{ or } x = "+(-B3+s3)+"\\)"
                        : "\\(x = "+(m3-s3)+" \\text{ or } x = "+(m3+s3)+"\\)";
-    var cat3=["Line 1 moves the constant term to the right side without changing its sign",
-              "Line 2 adds a value that is not the square of half the coefficient of \\(x\\)",
-              "Line 3 writes the squared factor with the full coefficient of \\(x\\) instead of half of it",
-              "Line 4 isolates \\(x\\) by adding half the coefficient of \\(x\\) instead of subtracting it"];
+    var cat3=["Line 1 moves the constant term to the right side without changing its sign to the opposite one",
+              "Line 2 adds a value that is not the square of half the coefficient of \\(x\\) in the trinomial shown",
+              "Line 3 writes the squared factor with the full coefficient of \\(x\\) instead of half of it in the work",
+              "Line 4 isolates \\(x\\) by adding half the coefficient of \\(x\\) instead of subtracting it at that step"];
     var why3=(mut3===3)
       ? "In Line 3, completing the square on \\(x^2 "+(B3<0?"- "+(-B3):"+ "+B3)+"x\\) produces the factor \\(("+fi+")^2\\), built from half the coefficient of \\(x\\), which is \\("+m3+"\\). Writing \\(("+fiB+")^2\\) uses the full coefficient \\("+B3+"\\) instead."
       : "In Line 4, isolating \\(x\\) from \\("+fi+" = \\pm "+s3+"\\) means subtracting \\("+m3+"\\) from both sides. Adding it instead shifts both roots.";
@@ -2597,10 +2597,10 @@ E("u3-error-analysis",3,["4.12"],3,"gen",function(){
   else if(mut4===3) NL4="The solutions are \\(x = "+(-h-kk)+"\\) and \\(x = "+(-h+kk)+"\\).";
   else if(mut4===4) NL4="The solutions are \\(x = "+(-vP)+"\\) and \\(x = "+(-vM)+"\\).";
   else NL4="The solutions are \\(x = "+vM+"\\) and \\(x = "+vP+"\\).";
-  var cat4=["Line 1 takes the square root of the right side but drops the negative possibility",
-            "Line 2 writes the same equation twice instead of the positive and negative cases",
-            "Line 3 moves the constant term to the other side with the wrong sign",
-            "Line 4 states both solutions with their signs reversed"];
+  var cat4=["Line 1 takes the square root of the right side but drops the negative possibility entirely",
+            "Line 2 writes the same equation twice instead of writing the positive and negative cases",
+            "Line 3 moves the constant term to the other side of the equation with the wrong sign entirely",
+            "Line 4 states both of the solutions with their signs reversed when they are written out in full"];
   var why4=[ "In Line 1, taking the square root of \\("+K+"\\) gives both \\("+kk+"\\) and \\("+(-kk)+"\\). Dropping the negative case loses the solution \\(x = "+vM+"\\).",
              "In Line 2, the two cases must be \\("+inner+" = "+kk+"\\) and \\("+inner+" = "+(-kk)+"\\). Writing the positive case twice loses the solution \\(x = "+vM+"\\).",
              "In Line 3, isolating \\(x\\) in \\("+inner+" = "+(-kk)+"\\) means adding \\("+h+"\\) to both sides. The sign is handled incorrectly, shifting both values.",
@@ -2648,9 +2648,9 @@ E("u3-method-choice",3,["4.13"],3,"gen",function(){
     }
     return mcq(stemHead+eqS+", and why?",
       "Take square roots of both sides: the equation is already a squared expression equal to a constant, so this undoes the square in one step",
-      ["Use the quadratic formula: the equation must first be expanded into the form \\(ax^2 + bx + c = 0\\) before any method can be applied",
-       "Complete the square: the squared expression on the left still has to be built by adding a constant",
-       "Factor the left side and use the zero product property: the left side is a product of two different factors"],
+      ["Use the quadratic formula: the equation must first be expanded into the form \\(ax^2 + bx + c = 0\\) before any method can be applied to it",
+       "Complete the square: the squared expression on the left still has to be built by adding a constant to both sides of the equation",
+       "Factor the left side and use the zero product property: the left side is written as a product of two different factors in the equation"],
       solA, {sc:sc});
   }
   if(sc==="SB"){
@@ -2659,9 +2659,9 @@ E("u3-method-choice",3,["4.13"],3,"gen",function(){
     var B=-(r1+r2), C=r1*r2, Q=u3QuadS(1,B,C);
     return mcq(stemHead+"\\("+Q+" = 0\\), and why?",
       "Factor the trinomial and apply the zero product property: it factors into two binomials with integer constants",
-      ["Use the quadratic formula: no other method produces the roots exactly",
-       "Use the quadratic formula: the trinomial factors only with fraction constants",
-       "Take square roots of both sides: the trinomial is a perfect square"],
+      ["Use the quadratic formula: no other method can produce the two roots of the equation exactly, whatever the roots are",
+       "Use the quadratic formula: the trinomial factors, but only with fraction constants in the two binomials",
+       "Take square roots of both sides: the trinomial on the left is already a perfect square trinomial here"],
       "Factoring is the most direct method:"+
       "\\[ \\begin{aligned} "+Q+" &= 0 \\\\ "+u3TwoFac(u3FacS(r1), u3FacS(r2))+" &= 0 \\end{aligned} \\]"+
       "So \\(x = "+r1+"\\) or \\(x = "+r2+"\\). Verify by substituting \\(x = "+r1+"\\) into the original equation:"+
@@ -2676,9 +2676,9 @@ E("u3-method-choice",3,["4.13"],3,"gen",function(){
     function scRoot(sign){ var t=(tC===1?"\\sqrt{"+tR+"}":tC+"\\sqrt{"+tR+"}"); return (-mE)+(sign<0?" - ":" + ")+t; }
     return mcq(stemHead+"\\("+Q2+" = 0\\), and why?",
       "Complete the square: \\(a = 1\\) and the coefficient of \\(x\\) is even, so halving it gives a whole number and the square completes without fractions",
-      ["Factor the trinomial: it factors into two binomials with integer constants",
-       "Use the quadratic formula: it is the only method that can produce irrational roots",
-       "Take square roots of both sides: the left side is a perfect square trinomial"],
+      ["Factor the trinomial: it factors into two binomials with integer constants, and those two factors give both of the roots directly, with no fractions involved.",
+       "Use the quadratic formula: it is the only method that can produce irrational roots, such as \\(x = -3 \\pm \\sqrt{5}\\), for an equation like this one",
+       "Take square roots of both sides: the left side is a perfect square trinomial, so its square root can be taken directly in one step"],
       "Completing the square keeps the arithmetic clean here:"+
       "\\[ \\begin{aligned} x^2 "+(bE<0?"- "+(-bE):"+ "+bE)+"x &= "+(-cE)+" \\\\ x^2 "+(bE<0?"- "+(-bE):"+ "+bE)+"x + "+(mE*mE)+" &= "+(-cE)+" + "+(mE*mE)+" \\\\ (x "+(mE<0?"- "+(-mE):"+ "+mE)+")^2 &= "+(D/4)+" \\\\ x &= "+scRoot(-1)+" \\text{ or } "+scRoot(1)+" \\end{aligned} \\]"+
       "Verify with the sum and product of the roots: the sum is \\("+(-2*mE)+" = -b\\) and the product is \\("+(mE*mE)+" - "+(tC*tC*tR)+" = "+cE+" = c\\), which matches the equation.",
@@ -2696,9 +2696,9 @@ E("u3-method-choice",3,["4.13"],3,"gen",function(){
     var loR=formulaRootStr(-b3, rp3[0], rp3[1], 2*a3, -1), hiR=formulaRootStr(-b3, rp3[0], rp3[1], 2*a3, 1);
     return mcq(stemHead+"\\("+Q3+" = 0\\), and why?",
       "Use the quadratic formula: the trinomial does not factor over the integers, so the formula gives the exact roots directly",
-      ["Factor the trinomial: it factors into two binomials with integer constants",
-       "Complete the square: half of the coefficient of \\(x\\) is a whole number",
-       "Take square roots of both sides: the equation has no \\(x\\) term"],
+      ["Factor the trinomial: it factors into two binomials with integer constants, and those two factors give both of the roots directly, with no fractions involved.",
+       "Complete the square: half of the coefficient of \\(x\\) is a whole number, so no fractions appear in the work at all",
+       "Take square roots of both sides: the equation has no \\(x\\) term, so the squared part can be undone directly in one step"],
       "The discriminant is \\("+D3+"\\), which is not a perfect square, so the roots are irrational and no integer factorization exists. The formula gives them directly:"+
       "\\[ \\begin{aligned} x &= \\frac{-("+b3+") \\pm \\sqrt{"+D3+"}}{"+(2*a3)+"} \\\\ &= "+loR+" \\text{ or } "+hiR+" \\end{aligned} \\]"+
       "Verify with the sum and product of the roots: their sum is \\("+u3FracS(-b3,a3)+" = -\\frac{b}{a}\\) and their product is \\("+u3FracS(c3,a3)+" = \\frac{c}{a}\\), which matches the equation.",
@@ -2710,9 +2710,9 @@ E("u3-method-choice",3,["4.13"],3,"gen",function(){
   var inner5="x"+(mm>0?" + "+mm:" - "+(-mm));
   return mcq(stemHead+"\\("+Q5+" = 0\\), and why?",
     "Take square roots: the left side is a perfect square trinomial, \\(("+inner5+")^2\\), so the equation has a single repeated root",
-    ["Use the quadratic formula: the discriminant is positive, so there are two distinct roots",
-     "Factor by grouping: the expression splits naturally into two pairs of terms",
-     "Complete the square: the square still has to be built by adding a constant to both sides"],
+    ["Use the quadratic formula: the discriminant of the equation is positive, so the equation has two distinct roots",
+     "Factor by grouping: the expression splits naturally into two pairs of terms that share factors with each other",
+     "Complete the square: a square such as \\((x + k)^2\\) still has to be built by adding a constant to both sides of the equation"],
     "The left side is already a perfect square:"+
     "\\[ \\begin{aligned} "+Q5+" &= ("+inner5+")^2 \\\\ "+inner5+" &= 0 \\\\ x &= "+(-mm)+" \\end{aligned} \\]"+
     "Verify by substituting \\(x = "+(-mm)+"\\) into the original equation:"+
@@ -2800,7 +2800,7 @@ E("u4-root-of-square",4,["1.11"],1,"gen",function(){
   var shape=pick(["neg","neg","given","square","decimal"]);
   if(shape==="neg"||shape==="decimal"){
     var k=(shape==="neg")?ri(2,25):pick([0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5]);
-    var ks=fmt(k,1),nks=fmt(-k,1),sq=fmt(k*k,2);
+    var ks=fmt(k,1),nks=(shape==="decimal")?fmtF(-k,2):fmt(-k,1),sq=fmt(k*k,2);
     return mcq("What is the value of \\(\\sqrt{(-"+ks+")^2}\\)?",
       ks,[nks,"\\(\\pm "+ks+"\\)",sq],
       "The square removes the sign: \\((-"+ks+")^2 = "+sq+"\\). A square root symbol means the non-negative (principal) root, so \\(\\sqrt{"+sq+"} = "+ks+"\\). The value is never negative, and a single square root never gives a plus-or-minus pair. The value is <b>"+ks+"</b>.",
@@ -3201,9 +3201,9 @@ E("u4-extraneous-why",4,["1.19"],3,"gen",function(){
   var shape=pick(["why","why","step","which"]);
   if(shape==="why"){
     var cor="At \\(x = "+s+"\\), the right side is \\("+s+" - "+c+" = "+(-k)+"\\), which is negative, but a square root is never negative, so the two sides cannot be equal";
-    var cands=["At \\(x = "+s+"\\), the radicand \\(x"+u4sgn(b)+"\\) is negative, so the square root is undefined there",
-      "Squaring both sides is never a valid step, so both values found this way have to be thrown out",
-      "The value \\(x = "+s+"\\) does not satisfy the squared equation \\(x"+u4sgn(b)+" = (x - "+c+")^2\\)"];
+    var cands=["At \\(x = "+s+"\\), the radicand \\(x"+u4sgn(b)+"\\) is a negative number, so the square root in the equation is undefined there",
+      "Squaring both sides is never a valid step in solving an equation, so both values found this way have to be thrown out entirely",
+      "The value \\(x = "+s+"\\) does not satisfy the squared equation either, since it fails \\(x"+u4sgn(b)+" = (x - "+c+")^2\\) when it is substituted back and checked"];
     return mcq("Solving \\("+eq+"\\) by squaring both sides leads to \\(x = "+r+"\\) and \\(x = "+s+"\\). The value \\(x = "+s+"\\) is not a solution of the original equation. Why not?",
       cor,u4dis(cor,cands,3),
       "Check \\(x = "+s+"\\) in the original equation: the left side is \\(\\sqrt{"+s+u4sgn(b)+"} = \\sqrt{"+(k*k)+"} = "+k+"\\) (the radicand there is positive), while the right side is \\("+s+" - "+c+" = "+(-k)+"\\). Squaring can produce values that solve the squared equation but fail the original, because the squared equation cannot tell \\("+k+"\\) from \\("+(-k)+"\\) on the right side. Only \\(x = "+r+"\\) checks.",
@@ -3876,9 +3876,9 @@ E("u5-solve-first-error",5,["3.20","3.19"],3,"gen",function(){
     var eq=u5frac(p,u5lin(1,-av))+" + "+q+" = "+u5frac(r,u5lin(1,-av));
     var prompt="A student solves \\("+eq+"\\). The work is shown in four lines.<br>Line 1: \\("+eq+"\\)<br>Line 2: \\("+p+" + "+q+"x - "+av+" = "+r+"\\)<br>Line 3: \\("+q+"x = "+(r-p+av)+"\\)<br>Line 4: \\(x = "+stuX+"\\)<br>Which option describes the first error in the work?";
     var cor="Line 2: \\("+q+u5par(1,-av)+"\\) was expanded as \\("+q+"x - "+av+"\\), but the correct expansion is \\("+q+"x - "+(q*av)+"\\)";
-    var cands=["Line 3: \\("+av+"\\) should have stayed negative when it was moved to the right side",
-      "Line 1: the fractions should have been combined into one fraction before anything else was done",
-      "There is no error; the solution is correct"];
+    var cands=["Line 3: \\("+av+"\\) should have stayed negative when moved to the right side, giving \\("+q+"x = "+(r-p-av)+"\\)",
+      "Line 1: the fractions should have been combined into one fraction before anything was done",
+      "There is no error in any of the four lines of the student's work; the solution is correct"];
     return mcq(prompt,cor,u5dis(cor,cands,3),
       "Multiplying the equation by the LCD \\("+u5lin(1,-av)+"\\) turns the term \\("+q+"\\) into \\("+q+u5par(1,-av)+"\\), and expanding that product gives \\("+q+"x - "+(q*av)+"\\), not \\("+q+"x - "+av+"\\). That is the first error; lines 3 and 4 follow correctly from the wrong line 2. With the correct expansion, \\("+q+"x = "+(r-p+q*av)+"\\) and the true solution is \\(x = "+trueX+"\\), not \\("+stuX+"\\).",
       {tpl:tpl,line:2,stuX:stuX,trueX:trueX,p:p,q:q,a:av,r:r});
@@ -3890,9 +3890,9 @@ E("u5-solve-first-error",5,["3.20","3.19"],3,"gen",function(){
     var eq2=u5frac("x^2",u5lin(1,-av2))+" = "+u5frac(u5lin(cv2,dv2),u5lin(1,-av2));
     var prompt2="A student solves \\("+eq2+"\\). The work is shown in four lines.<br>Line 1: \\("+eq2+"\\)<br>Line 2: \\(x^2 = "+u5lin(cv2,dv2)+"\\)<br>Line 3: \\("+u5quad(1,-cv2,-dv2)+" = 0\\), which factors as \\("+u5par(1,-av2)+u5par(1,-r2)+" = 0\\)<br>Line 4: The solutions are \\(x = "+av2+"\\) and \\(x = "+r2+"\\)<br>Which option describes the first error in the work?";
     var cor2="Line 4: \\(x = "+av2+"\\) is not a permissible value, because it makes the original denominator zero; it is extraneous and must be rejected";
-    var cands2=["Line 2: the numerators of two fractions cannot be set equal to each other",
-      "Line 3: the trinomial does not factor as \\("+u5par(1,-av2)+u5par(1,-r2)+"\\)",
-      "There is no error; the solution is correct"];
+    var cands2=["Line 2: the numerators of two fractions cannot be set equal to each other, even when the denominators are the same",
+      "Line 3: the equation does not factor as \\("+u5par(1,-av2)+u5par(1,-r2)+" = 0\\); expanding the factors shown gives an entirely different trinomial instead",
+      "There is no error in any of the four lines of the student's work; the final solution is correct as it stands"];
     return mcq(prompt2,cor2,u5dis(cor2,cands2,3),
       "Lines 2 and 3 are correct: with equal denominators the numerators can be set equal (for permissible \\(x\\)), and the trinomial does factor as shown. The error is at the end: \\(x = "+av2+"\\) makes the denominator of the original equation zero, so it is an extraneous root from clearing denominators and must be rejected. The only solution is \\(x = "+r2+"\\).",
       {tpl:tpl,line:4,stuX:av2,trueX:r2,a:av2,c:cv2,r:r2,d:dv2});
@@ -3910,9 +3910,9 @@ E("u5-solve-first-error",5,["3.20","3.19"],3,"gen",function(){
   var eq3=u5frac(av3,u5lin(1,-bv3))+" = "+u5frac(cv3,u5lin(1,-dv3));
   var prompt3="A student solves \\("+eq3+"\\). The work is shown in four lines.<br>Line 1: \\("+eq3+"\\)<br>Line 2: \\("+av3+u5par(1,-bv3)+" = "+cv3+u5par(1,-dv3)+"\\)<br>Line 3: \\("+u5lin(av3,-av3*bv3)+" = "+u5lin(cv3,-cv3*dv3)+"\\)<br>Line 4: \\(x = "+xs+"\\)<br>Which option describes the first error in the work?";
   var cor3="Line 2: each numerator was multiplied by its own denominator; \\("+av3+"\\) must multiply \\("+u5par(1,-dv3)+"\\) and \\("+cv3+"\\) must multiply \\("+u5par(1,-bv3)+"\\)";
-  var cands3=["Line 3: the expansion of \\("+av3+u5par(1,-bv3)+"\\) is incorrect",
-    "Line 4: the value of \\(x\\) was rounded to the wrong number",
-    "There is no error; the solution is correct"];
+  var cands3=["Line 3: the expansion of \\("+av3+u5par(1,-bv3)+"\\) is incorrect, so the lines that follow it are built on a wrong equation",
+    "Line 4: the value of \\(x\\) was rounded to the wrong number when the final answer was stated at the end of the work, so it is wrong",
+    "There is no error in any of the four lines of the student's work; the final solution is correct as it stands"];
   return mcq(prompt3,cor3,u5dis(cor3,cands3,3),
     "Cross-multiplication pairs each numerator with the <b>other</b> denominator: the cleared equation should be \\("+av3+u5par(1,-dv3)+" = "+cv3+u5par(1,-bv3)+"\\). Line 2 paired each numerator with its own denominator instead, and lines 3 and 4 follow correctly from that wrong line. The correct cleared equation gives the true solution \\(x = "+xt+"\\), not \\("+xs+"\\).",
     {tpl:tpl,line:2,stuX:xs,trueX:xt,a:av3,b:bv3,c:cv3,d:dv3});
@@ -4564,36 +4564,36 @@ E("u6-error-analysis",6,["4.7"],3,"var",varset([
   function(){
     return mcq("A student solves \\(-2\\left|x - 3\\right| = 10\\) by first rewriting the left side as \\(\\left|-2x + 6\\right|\\), then splitting into cases. Which statement identifies the <b>error</b>?",
       "Multiplying through the absolute value is not valid. The coefficient -2 multiplies the whole absolute value, so the first move should be to divide both sides by -2 and get \\(\\left|x - 3\\right| = -5\\), which has no solution.",
-      ["There is no error. Distributing a negative number through the bars gives an equivalent equation.",
-       "The error is in the splitting step. The cases should be \\(-2x + 6 = 10\\) and \\(-2x + 6 = -10\\), which the student did next.",
-       "The only error is the arithmetic: -2 multiplied by -3 is -6, not 6."],
+      ["There is no error in the work. Distributing a negative number through the bars gives an equivalent equation, so rewriting \\(-2\\left|x - 3\\right|\\) as \\(\\left|-2x + 6\\right|\\) is a valid first step and the cases that follow from it are right.",
+       "The error is in the splitting step. The cases should be \\(-2x + 6 = 10\\) and \\(-2x + 6 = -10\\), which the student did next, and solving those two cases gives \\(x = -2\\) and \\(x = 8\\) as the reported solutions of the equation.",
+       "The only error is the arithmetic inside the bars: -2 multiplied by -3 gives -6, not 6, so the left side should have been \\(\\left|-2x - 6\\right|\\), and splitting that gives the two cases \\(-2x - 6 = 10\\) and \\(-2x - 6 = -10\\)."],
       "An absolute value is not a bracket: multiplying by a constant outside the bars does not distribute inside them, because \\(-2\\left|x - 3\\right|\\) and \\(\\left|-2x + 6\\right|\\) take different values (try \\(x = 0\\): they give -6 and 6). Dividing by -2 isolates the absolute value as \\(\\left|x - 3\\right| = -5\\), and since an absolute value is never negative, the equation has no solution.",
       {err:"distribute"});
   },
   function(){
     return mcq("A student solves \\(\\left|x - 3\\right| = 8\\) by writing the two cases \\(x - 3 = 8\\) and \\(-x - 3 = 8\\), and reports the solutions 11 and -11. Which statement identifies the <b>error</b>?",
       "The second case negates only the first term. It should negate the whole expression: \\(-(x - 3) = 8\\), that is \\(-x + 3 = 8\\), which gives \\(x = -5\\), not -11.",
-      ["There is no error. Both reported solutions satisfy the original equation.",
-       "The error is in the first case. It should be \\(x + 3 = 8\\), which gives \\(x = 5\\).",
-       "The only error is the sign of the constant: -3 divided by -1 is 3, so the second solution is positive 11."],
+      ["There is no error in the work: both reported solutions satisfy the original equation when they are substituted back into it and checked carefully.",
+       "The error is in the first case: it should be \\(x + 3 = 8\\) rather than \\(x - 3 = 8\\), which gives \\(x = 5\\) as the first of the two reported solutions.",
+       "The only error is the sign of the constant in the second case: -3 divided by -1 is 3, so the second solution is positive 11, and the reported -11 has the wrong sign."],
       "Splitting an absolute value equation means the entire expression inside the bars takes both signs: \\(x - 3 = 8\\) or \\(-(x - 3) = 8\\). Writing \\(-x - 3\\) negates only the \\(x\\), leaving the \\(- 3\\) untouched. Solving the correct second case gives \\(x = -5\\), which checks: \\(\\left|-5 - 3\\right| = 8\\). The reported -11 fails the check: \\(\\left|-11 - 3\\right| = 14\\).",
       {err:"negate"});
   },
   function(){
     return mcq("A student solves \\(\\left|x^2 - 4\\right| = 3x\\), splits into cases, and reports all four values -4, -1, 1 and 4 as the solutions. Which statement identifies the <b>error</b>?",
       "The candidates were never checked. At \\(x = -4\\) and \\(x = -1\\), the right side \\(3x\\) is negative and cannot equal an absolute value, so both are extraneous; only 1 and 4 are solutions.",
-      ["There is no error. Four cases arise from a quadratic inside absolute value bars, so four solutions are expected.",
-       "The error is algebraic: the case equations are \\(x^2 - 4 = 3x\\) and \\(x^2 - 4 = -3x\\), and neither of these has integer roots.",
-       "The only error is a missing fifth solution at \\(x = 0\\), where the two sides are closest."],
+      ["There is no error in the work. Two cases arise from the bars, and each case is a quadratic with two roots, so four solutions are expected and all four of the reported values stand.",
+       "The error is algebraic: the two case equations are \\(x^2 - 4 = 3x\\) and \\(x^2 - 4 = -3x\\), and neither of these equations has integer roots among its solutions at all.",
+       "The only error is a missing fifth solution at \\(x = 0\\), where the two sides of the equation come closest to each other, so the reported list is incomplete rather than wrong in itself."],
       "Splitting gives candidates, not solutions. Every candidate must be checked in the original equation, because the right side can be negative for negative \\(x\\), and a negative number can never equal an absolute value. Checking: \\(x = 4\\) gives \\(12 = 12\\); \\(x = 1\\) gives \\(3 = 3\\); \\(x = -1\\) gives \\(3 = -3\\), false; \\(x = -4\\) gives \\(12 = -12\\), false. So the solution set is \\(\\{1, 4\\}\\)",
       {err:"extraneous"});
   },
   function(){
     return mcq("A student solves \\(\\left|2x - 1\\right| = 7\\) by writing only the case \\(2x - 1 = 7\\), and reports the single solution \\(x = 4\\). Which statement identifies the <b>error</b>?",
       "Only one of the two cases was solved. The number 7 is a distance from zero, so the inside can equal 7 or -7; the missing case \\(2x - 1 = -7\\) gives a second solution, \\(x = -3\\).",
-      ["There is no error. An absolute value equation has one case for each side of the equation, and only the right side varies here.",
-       "The error is that 7 should first be split into 7 and -7 on both sides, giving four cases to solve.",
-       "The only error is arithmetic: 7 plus 1 is 8, divided by 2 is 4, so the answer is correct and complete."],
+      ["There is no error in the work. An absolute value equation has one case for each side of the equation, and only the right side varies here, so one case is enough for it.",
+       "The error is that 7 should first be split into 7 and -7 on both sides, as in \\(\\left|2x - 1\\right| = 7\\) and \\(\\left|2x - 1\\right| = -7\\), giving four cases to solve instead of the single case the student wrote.",
+       "The only error is arithmetic in the case shown: 7 plus 1 is 8, and 8 divided by 2 is 4, so the answer given is correct and the solution is complete as it stands in the work."],
       "The equation says the expression \\(2x - 1\\) is at distance 7 from zero, and two numbers sit at that distance: 7 and -7. Both cases must be solved. The second case gives \\(2x = -6\\), so \\(x = -3\\), and it checks: \\(\\left|2(-3) - 1\\right| = \\left|-7\\right| = 7\\). The full solution set is \\(\\{-3, 4\\}\\)",
       {err:"onecase"});
   }
@@ -4606,7 +4606,7 @@ E("u6-no-solution",6,["4.8"],3,"gen",function(){
     var a=pick([1,2,3]), b=ri(-8,8), c=ri(2,9);
     return mcq("Which statement correctly describes the solutions of \\("+u6AbsArg(a,b)+" = -"+c+"\\)?",
       "No solution. The left side is an absolute value, so it is never negative, while the right side is negative.",
-      ["Two solutions, found by solving \\("+u6Lin(a,b)+" = -"+c+"\\) and \\("+u6Lin(a,b)+" = "+c+"\\).",
+      ["Two solutions, found by solving \\("+u6Lin(a,b)+" = -"+c+"\\) and \\("+u6Lin(a,b)+" = "+c+"\\), one from each of the two cases that arise here.",
        "One solution, where the graph of \\(y = "+u6AbsArg(a,b)+"\\) touches the line \\(y = -"+c+"\\) at its vertex.",
        "Every real number is a solution, because absolute value makes both sides match in size."],
       "The graph of \\(y = "+u6AbsArg(a,b)+"\\) is a V lying on and above the x-axis, because an absolute value is a distance and distances are never negative. The line \\(y = -"+c+"\\) lies entirely below the x-axis, so the graphs never meet and the equation has no solution. Splitting into cases cannot rescue it: both case equations would claim a distance equals a negative number.",
@@ -4627,9 +4627,9 @@ E("u6-no-solution",6,["4.8"],3,"gen",function(){
   var k=pick([1,2,3,5]), m=ri(1,8);
   return mcq("Which statement correctly describes the solutions of \\(\\left|x^2 + "+k+"\\right| = -"+m+"\\)?",
     "No solution. The expression inside the bars is positive for every \\(x\\), and its absolute value is even further from being negative.",
-    ["Two solutions, found by setting \\(x^2 + "+k+" = -"+m+"\\) and \\(x^2 + "+k+" = "+m+"\\) and solving each quadratic.",
-     "One solution at \\(x = 0\\), where the inside of the bars takes its smallest value.",
-     "Solutions exist but are not real numbers, so they are reported as \\(x = \\pm \\sqrt{"+(m+k)+"}\\,i\\)."],
+    ["Two solutions, found by setting \\(x^2 + "+k+" = -"+m+"\\) and \\(x^2 + "+k+" = "+m+"\\) and solving each of the two quadratics in turn, just as in the positive case.",
+     "One solution when the variable is zero, where the inside of the bars takes its smallest value and the two sides come closest.",
+     "Solutions exist but are not real numbers, so they are reported as imaginary values, written in the form \\(x = \\pm \\sqrt{"+(m+k)+"}\\,i\\)."],
     "Work by inspection: \\(x^2 \\geq 0\\), so \\(x^2 + "+k+" \\geq "+k+" > 0\\), and the absolute value of a positive number is that number, which is at least "+k+". The left side can therefore never equal the negative number \\(-"+m+"\\) and the equation has no solution. Splitting into cases produces a case with \\(x^2 = -"+(m+k)+"\\), which has no real solutions anyway.",
     {fam:fam, k:k, m:m, ans:"none"});
 });
@@ -4881,12 +4881,12 @@ E("u7-intersection-meaning", 7, ["4.48"], 1, "gen", function () {
   var r = P1[0], yv = P1[1];
   var xv = -q[1] / (2 * q[0]);
   var cands = [
-    { t: "When \\(x = " + yv + "\\), both equations give \\(y = " + r + "\\)", ok: false },
+    { t: "When \\(x = " + yv + "\\), both of the equations give the value \\(y = " + r + "\\)", ok: false },
     { t: "\\(x = " + r + "\\) is the only value that satisfies both equations", ok: false },
-    { t: "The parabola has its vertex at \\(" + u7Pt(r, yv) + "\\)", ok: xv === r && q[0] * r * r + q[1] * r + q[2] === yv },
-    { t: "Both graphs cross the horizontal axis at \\(" + u7Pt(r, yv) + "\\)", ok: yv === 0 }
+    { t: "The parabola has its vertex at the point \\(" + u7Pt(r, yv) + "\\)", ok: xv === r && q[0] * r * r + q[1] * r + q[2] === yv },
+    { t: "Both graphs cross the horizontal axis at the point \\(" + u7Pt(r, yv) + "\\)", ok: yv === 0 }
   ,
-    { t: "Substituting \\(x = " + P2[0] + "\\) into the two equations gives two different values of \\(y\\)", ok: false },
+    { t: "Substituting \\(x = " + P2[0] + "\\) gives two different values of \\(y\\)", ok: false },
     { t: "The point \\(" + u7Pt(r, yv) + "\\) lies on the parabola but not on the line", ok: false }];
   var dis2 = cands.filter(function (c) { return !c.ok; }).map(function (c) { return c.t; });
   var key2 = "At \\(x = " + r + "\\), the two equations have the same value, \\(y = " + yv + "\\)";
@@ -5497,9 +5497,9 @@ E("u8-error-analysis", 8, ["4.23"], 3, "gen", function () {
     if (r2 > 7) r2 = 7;
     var ineq = u8facB(r1) + u8facB(r2) + " > 0";
     var keyText = "The student chose the interval where the product is negative. A product greater than zero needs both factors to have the same sign, which happens on the two outer intervals.";
-    var dis = ["The student should have reversed the inequality sign after dividing both sides by a negative number.",
-               "The student excluded the endpoints, but the endpoints satisfy the inequality and should be included.",
-               "The student used the wrong roots; the factors give roots of " + (r1 + 1) + " and " + (r2 - 1) + " instead."];
+    var dis = ["The student should have reversed the inequality sign after dividing both sides by a negative number, which would have changed the direction of the final answer.",
+               "The student excluded the endpoints, but the endpoints satisfy the inequality and should have been included in the final interval that is reported as the solution.",
+               "The student used the wrong roots; the factors give roots of " + (r1 + 1) + " and " + (r2 - 1) + " instead, and the interval was taken from those wrong roots, so the endpoints of the answer are wrong as well."];
     return mcq("A student solves \\(" + ineq + "\\) and gives the solution \\(" + r1 + " < x < " + r2 + "\\). Which statement best describes the student's error?",
       keyText, dis,
       "Between \\(" + r1 + "\\) and \\(" + r2 + ")\\), one factor is positive and the other is negative, so the product is negative there, not positive. The product is positive when both factors are positive or both are negative: \\(x < " + r1 + "\\) or \\(x > " + r2 + "\\). <b>" + keyText + "</b>",
@@ -5511,9 +5511,9 @@ E("u8-error-analysis", 8, ["4.23"], 3, "gen", function () {
     var sym = pick(["ge", "le"]), C = -a * k + b;
     var stem = u8linB(-a, b);
     var keyText2 = "Dividing both sides by a negative number reverses the inequality, so the sign should have been flipped in the last step.";
-    var dis2 = ["The student made an arithmetic error when moving the constant term to the right side.",
-                "The endpoint should be excluded, because the final answer must use a strict inequality symbol.",
-                "The variable should have been isolated by first adding " + a + "x to both sides of the inequality."];
+    var dis2 = ["The student made an arithmetic error when moving the constant term to the right side in the first step of the work.",
+                "The endpoint should be excluded, because the final answer must use a strict inequality symbol rather than the one shown.",
+                "The variable should have been isolated by first adding " + a + "x to both sides of the inequality before anything else was done."];
     var prompt = "A student solves \\(" + stem + " " + U8SYM[sym] + " " + C + "\\) with these steps: \\[ \\begin{aligned} " + stem + " &" + U8SYM[sym] + " " + C + " \\\\ " + (-a) + "x &" + U8SYM[sym] + " " + (C - b) + " \\\\ x &" + U8SYM[sym] + " " + k + " \\end{aligned} \\] Which statement best describes the error in the student's work?";
     return mcq(prompt, keyText2, dis2,
       "The arithmetic is correct up to the last step: \\(" + (-a) + "x " + U8SYM[sym] + " " + (C - b) + ")\\). Dividing by \\(" + (-a) + "\\) without reversing the symbol gives the stated answer, but division by a negative reverses the relation, so the correct final step is \\(x " + U8SYM[u8flip(sym)] + " " + k + "\\). <b>" + keyText2 + "</b>",
@@ -5526,11 +5526,11 @@ E("u8-error-analysis", 8, ["4.23"], 3, "gen", function () {
     : "The boundary should be dashed, because the strict inequality does not include points on the parabola itself.";
   var dis3 = bsym === "gt"
     ? ["The student shaded the wrong side; the region below the parabola is the one that satisfies the inequality.",
-       "The parabola should open downward, because the inequality uses a greater-than symbol.",
-       "The vertex of the parabola is in the wrong position, so the whole graph is shifted."]
+       "The parabola should open downward, because the inequality uses a greater-than symbol in the statement.",
+       "The vertex of the parabola is in the wrong position, so the whole graph is shifted from where it belongs."]
     : ["The student shaded the wrong side; the region above the parabola is the one that satisfies the inequality.",
-       "The parabola should open upward, because the inequality uses a less-than symbol.",
-       "The vertex of the parabola is in the wrong position, so the whole graph is shifted."];
+       "The parabola should open upward, because the inequality uses a less-than symbol in the given statement.",
+       "The vertex of the parabola is in the wrong position, so the whole graph is shifted from where it belongs."];
   var sideWord = bsym === "gt" ? "above" : "below";
   return mcq("A student graphs \\(y " + U8SYM[bsym] + " " + fb + "\\) using a solid parabola, with the region " + sideWord + " the parabola shaded. Which statement best describes the student's error?",
     keyText3, dis3,
@@ -5693,27 +5693,27 @@ E("u9-converge-check", 9, ["4.70", "4.71"], 1, "gen", function () {
     conv: { key: "It converges, because \\(|r| < 1\\): the partial sums approach one fixed value.",
       dis: ["It diverges, because a series with infinitely many terms cannot settle on a finite sum.",
             "It diverges, because the ratio must be a whole number for a sum to exist.",
-            "It converges, because every ratio below 1 produces a sum."] },
+            "It converges, because every ratio below 1 produces a sum for the series."] },
     convNeg: { key: "It converges, because \\(|r| < 1\\), even though the terms alternate in sign.",
-      dis: ["It diverges, because the terms alternate in sign.",
-            "It diverges, because the common ratio is negative.",
-            "It converges, because every negative ratio produces a sum."] },
+      dis: ["It diverges, because the terms alternate in sign as the series goes on.",
+            "It diverges, because the common ratio is negative, so no sum can exist.",
+            "It converges, because every negative ratio produces a sum for the series."] },
     divPos: { key: "It diverges, because \\(|r| > 1\\): the terms grow in size, so the partial sums never approach a value.",
-      dis: ["It converges, because the common ratio is positive.",
-            "It converges, because each term is built from the one before it by the same rule.",
-            "It diverges, because the first term is positive."] },
+      dis: ["It converges, because the common ratio is positive, so the terms keep the same sign throughout.",
+            "It converges, because each term is built from the one before it by the same rule, from the first term onward.",
+            "It diverges, because the first term is positive and the terms grow steadily from there."] },
     divNeg: { key: "It diverges, because \\(|r| > 1\\): the terms grow in size as they alternate in sign.",
       dis: ["It converges, because the positive and negative terms cancel each other out.",
-            "It converges, because the common ratio is less than 1.",
-            "It diverges, because every negative ratio produces a diverging series."] },
+            "It converges, because the common ratio is less than 1, so the terms shrink.",
+            "It diverges, because every negative ratio produces a diverging series, whatever its size."] },
     one: { key: "It diverges, because \\(r = 1\\): the partial sums grow by the same amount every step.",
-      dis: ["It converges, because the terms are constant.",
-            "It converges to the value of the first term.",
-            "It diverges, because the ratio must be a fraction for a sum to exist."] },
+      dis: ["It converges, because the terms are constant, so the sum settles quickly.",
+            "It converges to the value of the first term, since the terms never change from term to term.",
+            "It diverges, because the ratio must be a fraction for a sum to exist at all."] },
     negOne: { key: "It diverges, because \\(r = -1\\): the partial sums alternate between two values and never settle.",
-      dis: ["It converges to 0, because the terms cancel in pairs.",
-            "It converges, because the size of the ratio is not greater than 1.",
-            "It diverges, because every negative ratio produces a diverging series."] }
+      dis: ["It converges to 0, because the terms cancel in pairs as they are added up, one after another.",
+            "It converges, because the size of the ratio is not greater than 1 in this case.",
+            "It diverges, because every negative ratio produces a diverging series in the end, whatever the terms are."] }
   };
   var c = pick(CASES), t1 = pick(c.t1);
   var terms = u9geoTerms(t1, c.rn, c.rd, 4);
@@ -6041,9 +6041,9 @@ E("u9-derive-formulas", 9, ["4.58", "4.61", "4.67"], 3, "var", varset([
   function () {
     var key = "It is not arithmetic: the products are 12, 25, 42, and the differences between consecutive products are 13 and 17, which are not equal.";
     var dis = [
-      "It is arithmetic, with common difference 13.",
-      "It is arithmetic, with common difference 4.",
-      "It is not arithmetic, because the product of two sequences can never be an arithmetic sequence."
+      "It is arithmetic, with common difference 13, since the products grow by that amount from each term to the next.",
+      "It is arithmetic, with common difference 4, since each factor grows by a fixed amount from each term to the next.",
+      "It is not arithmetic, because the product of two sequences can never be an arithmetic sequence, whatever the factors in the two sequences are."
     ];
     var prompt = "Sequence A has general term \\(a_n = 2n + 1\\) and sequence B has general term \\(b_n = n + 3\\). A new sequence is formed by multiplying corresponding terms of A and B. Which statement about the new sequence is correct?";
     var sol = "Compute the first few products: \\(3 \\times 4 = 12\\), \\(5 \\times 5 = 25\\), \\(7 \\times 6 = 42\\). The differences are \\(25 - 12 = 13\\) and \\(42 - 25 = 17\\). Since the differences are not equal, the product sequence is not arithmetic. (Multiplying is not like adding here: the differences grow because both factors grow.)";
