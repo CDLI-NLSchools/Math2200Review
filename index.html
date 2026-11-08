@@ -1874,6 +1874,7 @@ E("u3-factor-common",3,["3.14"],1,"gen",function(){
     var nz=(A2!==0?1:0)+(A1!==0?1:0)+1;
     if(nz<2) continue;
     if(u3Gcd(u3Gcd(A2,A1),A0)!==1) continue;
+    if(A2!==0){ var disc=A1*A1-4*A2*A0, dsq=Math.sqrt(disc); if(disc>=0&&dsq===Math.floor(dsq)) continue; }
     break;
   }
   inside={0:A0,1:A1,2:A2};
