@@ -3162,7 +3162,7 @@ E("u4-model-radical",4,["1.20"],3,"gen",function(){
    items, and the four word-problem scenarios: work rates, distance and
    speed, upstream/downstream, shared cost) and the MHR Pre-Calculus 11
    Chapter 6 bank, rewritten with original stems and values.
-   17 entries: L1 4, L2 10, L3 3. Helpers are prefixed u5. */
+   19 entries: L1 4, L2 11, L3 4. Helpers are prefixed u5. */
 
 function u5gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=a%b;a=b;b=t;}return a||1;}
 function u5sgn(n){return n>0?" + "+n:(n<0?" - "+(-n):"");}
@@ -3176,6 +3176,7 @@ function u5dis(correct,cands,n){var out=[],seen={};seen[String(correct)]=1;for(v
 function u5npvStr(vals){var v=vals.slice().sort(function(x,y){return x-y;});return v.map(function(z){return "x \\ne "+z;}).join(", ");}
 function u5pow(e){return e===0?"":(e===1?"x":"x^{"+e+"}");}
 function u5cp(c,e){if(e===0)return ""+c;var p=u5pow(e);return c===1?p:c+p;}
+function u5fac(r,p){var s=u5par(1,-r);return p===1?s:s+"^"+p;}
 function u5monoVal(cn,cd,e){ /* body for (cn/cd) * x^e, cn,cd positive and reduced, e any sign */
   var top,bot;
   if(e>=0){top=u5cp(cn,e);bot=(cd===1?"":""+cd);}
@@ -3600,6 +3601,61 @@ E("u5-add-subtract",5,["3.12","3.11"],2,"gen",function(){
     {mode:mode,op:op2,p:p,q:q,r:r,s:s});
 });
 
+/* ---------- 3.11: choose the lowest common denominator for a pair or triple (L2) ---------- */
+E("u5-lcd-choose",5,["3.11"],2,"gen",function(){
+  var mode=pick(["shared","shared","power","coeff","triple"]);
+  function threeRoots(){var rs=u5twoRoots(),r=rs[0],s=rs[1],t=pick(U5NZ),g=0;while((t===r||t===s)&&g<60){t=pick(U5NZ);g++;}return [r,s,t];}
+  if(mode==="shared"){
+    var R=threeRoots(),r=R[0],s=R[1],t=R[2],p=ri(2,9),q=ri(2,9);
+    var d1=u5fac(r,1)+u5fac(s,1),d2=u5fac(r,1)+u5fac(t,1);
+    var cor=u5fac(r,1)+u5fac(s,1)+u5fac(t,1);
+    var cands=[u5fac(r,2)+u5fac(s,1)+u5fac(t,1),
+      pick([d1,d2]),
+      u5fac(s,1)+u5fac(t,1),
+      u5fac(-r,1)+u5fac(s,1)+u5fac(t,1),
+      u5quad(2,-(2*r+s+t),r*s+r*t)];
+    return mcq("What is the lowest common denominator of \\("+u5frac(p,d1)+"\\) and \\("+u5frac(q,d2)+"\\)?",
+      u5wrap(cor),u5dis(cor,cands,3).map(u5wrap),
+      "Both denominators are already in factored form: \\("+d1+"\\) and \\("+d2+"\\). Build the LCD factor by factor, taking each different factor the greatest number of times it appears in any one denominator. The factor \\("+u5fac(r,1)+"\\) appears in both denominators, but it is needed only once; \\("+u5fac(s,1)+"\\) and \\("+u5fac(t,1)+"\\) each appear once. So the LCD is \\["+cor+"\\] The lowest common denominator is <b>\\("+cor+"\\)</b>. Multiplying the two denominators together would use the shared factor \\("+u5fac(r,1)+"\\) twice, which gives a common denominator, but not the lowest one.",
+      {mode:mode,dens:[{c:1,f:[[r,1],[s,1]]},{c:1,f:[[r,1],[t,1]]}],lcd:{c:1,f:[[r,1],[s,1],[t,1]]}});
+  }
+  if(mode==="power"){
+    var R2=threeRoots(),r2=R2[0],s2=R2[1],t2=R2[2],p2=ri(2,9),q2=ri(2,9);
+    var e1=u5fac(r2,2)+u5fac(s2,1),e2=u5fac(r2,1)+u5fac(t2,1);
+    var cor2=u5fac(r2,2)+u5fac(s2,1)+u5fac(t2,1);
+    var cands2=[u5fac(r2,1)+u5fac(s2,1)+u5fac(t2,1),
+      u5fac(r2,3)+u5fac(s2,1)+u5fac(t2,1),
+      pick([e1,u5fac(r2,2)+u5fac(t2,1)]),
+      u5fac(-r2,2)+u5fac(s2,1)+u5fac(t2,1)];
+    return mcq("What is the lowest common denominator of \\("+u5frac(p2,e1)+"\\) and \\("+u5frac(q2,e2)+"\\)?",
+      u5wrap(cor2),u5dis(cor2,cands2,3).map(u5wrap),
+      "Both denominators are already in factored form: \\("+e1+"\\) and \\("+e2+"\\). The LCD takes each factor at the highest power it has in any one denominator. The factor \\("+u5fac(r2,1)+"\\) appears squared in the first denominator and only once in the second, so the LCD uses \\("+u5fac(r2,2)+"\\) for it, and takes \\("+u5fac(s2,1)+"\\) and \\("+u5fac(t2,1)+"\\) once each: \\["+cor2+"\\] The lowest common denominator is <b>\\("+cor2+"\\)</b>. Using only the first power of \\("+u5fac(r2,1)+"\\) would leave the first denominator unable to divide the result evenly.",
+      {mode:mode,dens:[{c:1,f:[[r2,2],[s2,1]]},{c:1,f:[[r2,1],[t2,1]]}],lcd:{c:1,f:[[r2,2],[s2,1],[t2,1]]}});
+  }
+  if(mode==="coeff"){
+    var a=ri(2,9),b=ri(2,9),g0=0;while(b===a&&g0<40){b=ri(2,9);g0++;}
+    var L=a*b/u5gcd(a,b),r3=pick(U5NZ),p3=ri(2,9),q3=ri(2,9);
+    var f1=u5fac(r3,1),dA=a+f1,dB=b+f1,cor3=L+f1;
+    var cands3=[(a*b)+f1,""+a+f1,(a+b)+f1,""+b+f1,L+u5fac(-r3,1)];
+    var remark=(u5gcd(a,b)>1)?("The coefficients "+a+" and "+b+" share a common factor, so their least common multiple is "+L+", not their product "+(a*b)+"."):("The coefficients "+a+" and "+b+" have no common factor, so their least common multiple is their product, "+L+".");
+    return mcq("What is the lowest common denominator of \\("+u5frac(p3,dA)+"\\) and \\("+u5frac(q3,dB)+"\\)?",
+      u5wrap(cor3),u5dis(cor3,cands3,3).map(u5wrap),
+      "Both denominators contain the factor \\("+f1+"\\), so that factor is needed only once in the LCD. "+remark+" So the LCD is \\["+cor3+"\\] The lowest common denominator is <b>\\("+cor3+"\\)</b>.",
+      {mode:mode,dens:[{c:a,f:[[r3,1]]},{c:b,f:[[r3,1]]}],lcd:{c:L,f:[[r3,1]]}});
+  }
+  var R4=threeRoots(),r4=R4[0],s4=R4[1],t4=R4[2],p4=ri(2,9),q4=ri(2,9),w4=ri(2,9);
+  var g1=u5fac(r4,1)+u5fac(s4,1),g2=u5fac(s4,1)+u5fac(t4,1),g3=u5fac(r4,1)+u5fac(t4,1);
+  var cor4=u5fac(r4,1)+u5fac(s4,1)+u5fac(t4,1);
+  var cands4=[u5fac(r4,2)+u5fac(s4,2)+u5fac(t4,2),
+    pick([g1,g2,g3]),
+    u5quad(3,-2*(r4+s4+t4),r4*s4+s4*t4+r4*t4),
+    u5fac(-r4,1)+u5fac(s4,1)+u5fac(t4,1)];
+  return mcq("What is the lowest common denominator of \\("+u5frac(p4,g1)+"\\), \\("+u5frac(q4,g2)+"\\) and \\("+u5frac(w4,g3)+"\\)?",
+    u5wrap(cor4),u5dis(cor4,cands4,3).map(u5wrap),
+    "Write out the factors of the three denominators: \\("+g1+"\\), \\("+g2+"\\) and \\("+g3+"\\). Across the three denominators, the different factors are \\("+u5fac(r4,1)+"\\), \\("+u5fac(s4,1)+"\\) and \\("+u5fac(t4,1)+"\\), and each one appears at most once in any single denominator, so the LCD takes each of them once: \\["+cor4+"\\] The lowest common denominator is <b>\\("+cor4+"\\)</b>. Multiplying all three denominators together would use every factor twice.",
+    {mode:mode,dens:[{c:1,f:[[r4,1],[s4,1]]},{c:1,f:[[s4,1],[t4,1]]},{c:1,f:[[r4,1],[t4,1]]}],lcd:{c:1,f:[[r4,1],[s4,1],[t4,1]]}});
+});
+
 /* ---------- 3.13: simplify a complex fraction (L2) ---------- */
 E("u5-complex-fraction",5,["3.13"],2,"gen",function(){
   var mode=pick(["numeric","singleVar","binomial"]);
@@ -3775,6 +3831,52 @@ E("u5-word-problem",5,["3.21"],3,"gen",function(){
     nv,0.01,
     "Let the number be \\(x\\). Translating the statement into an equation: \\[ \\begin{aligned} x + \\frac{1}{x} &= "+u5fr(nv*nv+1,nv)+" \\\\ "+nv+"x^2 - "+(nv*nv+1)+"x + "+nv+" &= 0 \\\\ (x - "+nv+")("+nv+"x - 1) &= 0 \\\\ x &= "+nv+" \\text{ or } x = "+u5fr(1,nv)+" \\end{aligned} \\] Only \\(x = "+nv+"\\) is greater than \\(1\\) (the other value is its reciprocal). The number is <b>"+nv+"</b>.",
     {ctx:"reciprocal",n:nv});
+});
+
+/* ---------- 3.21: two travellers toward each other, or apart from one point (L3, numeric) ---------- */
+E("u5-meeting-problem",5,["3.21"],3,"gen",function(){
+  var ctxs=[
+    {key:"cars",noun:"car",
+     toward:"Two cars start at the same time from two towns that are D km apart and drive toward each other on the same road. One car travels at V1 km/h and the other at V2 km/h.",
+     apart:"Two cars leave the same town at the same time and drive in opposite directions along a straight highway. One car travels at V1 km/h and the other at V2 km/h.",
+     tuples:[[80,70,300],[90,60,300],[70,50,300],[80,40,300],[100,80,270],[60,40,250],[85,65,300],[95,55,300],[65,55,240],[75,45,240]]},
+    {key:"cyclists",noun:"cyclist",
+     toward:"Two cyclists start at the same time from opposite ends of a trail D km long and ride toward each other. One cyclist rides at V1 km/h and the other at V2 km/h.",
+     apart:"Two cyclists leave the same trailhead at the same time and ride in opposite directions. One cyclist rides at V1 km/h and the other at V2 km/h.",
+     tuples:[[16,14,45],[18,12,45],[20,16,54],[15,10,50],[22,18,60],[24,16,100],[14,10,36],[25,15,80],[16,12,42],[20,12,48]]},
+    {key:"walkers",noun:"hiker",
+     toward:"Two hikers start at the same time from trailheads at opposite ends of a trail D km long and walk toward each other. One hiker walks at V1 km/h and the other at V2 km/h.",
+     apart:"Two hikers leave the same trailhead at the same time, one taking a north path and the other a south path. One hiker walks at V1 km/h and the other at V2 km/h.",
+     tuples:[[5,4,18],[6,4,25],[6,3,18],[4,4,12],[6,5,22],[4,3,14],[7,5,24],[7,4,22],[8,4,24],[5,3,16]]}];
+  var cx=pick(ctxs),dir=pick(["toward","toward","apart"]),ask=pick(["time","dist"]);
+  var tp=pick(cx.tuples),v1=tp[0],v2=tp[1],D=tp[2];
+  var t=D/(v1+v2),ans=(ask==="time")?t:v1*t;
+  function fill(s){return s.replace(/V1/g,""+v1).replace(/V2/g,""+v2).replace(/\bD\b/g,""+D);}
+  var stem=fill(dir==="toward"?cx.toward:cx.apart);
+  var tStr=""+t,hm=(t%1===0.5)?(" ("+Math.floor(t)+" h 30 min)"):"";
+  var meta={ctx:"meeting: "+cx.key,dir:dir,ask:ask,v1:v1,v2:v2,D:D,t:t,ans:ans};
+  if(dir==="toward"&&ask==="time"){
+    return numq(stem+" How long, in hours, until they meet?",
+      ans,0.01,
+      "Let \\(t\\) be the number of hours until they meet. In \\(t\\) hours the first "+cx.noun+" travels \\("+v1+"t\\) km and the second travels \\("+v2+"t\\) km, and together they cover the "+D+" km between their starting points, so the two distances add to "+D+": \\[ \\begin{aligned} "+v1+"t + "+v2+"t &= "+D+" \\\\ "+(v1+v2)+"t &= "+D+" \\\\ t &= "+tStr+" \\end{aligned} \\] They meet after <b>"+tStr+" hours</b>"+hm+".",
+      meta);
+  }
+  if(dir==="apart"&&ask==="time"){
+    return numq(stem+" How long, in hours, until they are "+D+" km apart?",
+      ans,0.01,
+      "Let \\(t\\) be the number of hours. In \\(t\\) hours the first "+cx.noun+" travels \\("+v1+"t\\) km and the second travels \\("+v2+"t\\) km in the opposite direction, so the distance between them is the sum of the two distances: \\[ \\begin{aligned} "+v1+"t + "+v2+"t &= "+D+" \\\\ "+(v1+v2)+"t &= "+D+" \\\\ t &= "+tStr+" \\end{aligned} \\] They are "+D+" km apart after <b>"+tStr+" hours</b>"+hm+".",
+      meta);
+  }
+  if(dir==="toward"&&ask==="dist"){
+    return numq(stem+" How far, in kilometres, has the first "+cx.noun+" travelled when they meet?",
+      ans,0.01,
+      "Let \\(x\\) be the distance, in kilometres, that the first "+cx.noun+" has travelled when they meet. The second "+cx.noun+" has then travelled \\("+D+" - x\\) km. They have been travelling for the same length of time, and time is distance divided by speed, so their two times are equal: \\[ \\begin{aligned} \\frac{x}{"+v1+"} &= \\frac{"+D+" - x}{"+v2+"} \\\\ "+v2+"x &= "+v1+"("+D+" - x) \\\\ "+v2+"x &= "+(v1*D)+" - "+v1+"x \\\\ "+(v1+v2)+"x &= "+(v1*D)+" \\\\ x &= "+ans+" \\end{aligned} \\] The first "+cx.noun+" has travelled <b>"+ans+" km</b> when they meet.",
+      meta);
+  }
+  return numq(stem+" When they are "+D+" km apart, how far, in kilometres, has the first "+cx.noun+" travelled?",
+    ans,0.01,
+    "Moving in opposite directions, the two separate at a combined speed of \\("+v1+" + "+v2+" = "+(v1+v2)+"\\) km/h, so they are "+D+" km apart after \\(t = \\frac{"+D+"}{"+(v1+v2)+"} = "+tStr+"\\) hours. In that time the first "+cx.noun+" travels \\("+v1+" \\times "+tStr+" = "+ans+"\\) km. The first "+cx.noun+" has travelled <b>"+ans+" km</b>.",
+    meta);
 });
 
 /* ================= Unit 6: Absolute Value and Reciprocal Functions ================= */
@@ -5879,7 +5981,7 @@ E("u9-crossover", 9, ["4.59", "4.60"], 3, "gen", function () {
 /* Exam Section B draws only from these entries (marks per question); every other
    entry is selected-response only in exam mode. Worksheet mode uses these plus
    all numeric-answer entries. */
-var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3,"u4-rationalize-mono":1,"u4-rationalize-binomial":3};
+var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-lcd-choose":2,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u5-meeting-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3,"u4-rationalize-mono":1,"u4-rationalize-binomial":3};
 /* BANK-SRC-END */
 </script>
 
