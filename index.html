@@ -6071,9 +6071,9 @@ var current=null,checkedCount=0,correctCount=0,checkMode="each",endGraded=false;
 /* ===== Math 2200 scaffolding features (senior retrofit, ported from Math 9) ===== */
 var setResults={};
 var REF_HTML={
-1:"<b>Trigonometry:</b> \\(\\frac{\\sin A}{a}=\\frac{\\sin B}{b}=\\frac{\\sin C}{c}\\)<br>\\(a^{2}=b^{2}+c^{2}-2bc\\cos A\\)<br>\\(\\cos A=\\frac{b^{2}+c^{2}-a^{2}}{2cb}\\)",
-3:"<b>Quadratic Equations:</b> \\(x=\\frac{-b\\pm\\sqrt{b^{2}-4ac}}{2a}\\)",
-9:"<b>Sequences and Series:</b> \\(t_{n}=t_{1}+(n-1)d,\\ n\\in N\\)<br>\\(S_{n}=\\frac{n}{2}(t_{1}+t_{n})\\)<br>\\(t_{n}=t_{1}\\left(r^{n-1}\\right),\\ n\\in N\\)<br>\\(S_{n}=\\frac{t_{1}\\left(r^{n}-1\\right)}{r-1}\\)<br>\\(S_{n}=\\frac{t_{1}}{1-r}\\)"
+1:"\\(\\frac{\\sin A}{a}=\\frac{\\sin B}{b}=\\frac{\\sin C}{c}\\)<br>\\(a^{2}=b^{2}+c^{2}-2bc\\cos A\\)<br>\\(\\cos A=\\frac{b^{2}+c^{2}-a^{2}}{2cb}\\)",
+3:"\\(x=\\frac{-b\\pm\\sqrt{b^{2}-4ac}}{2a}\\)",
+9:"\\(t_{n}=t_{1}+(n-1)d,\\ n\\in N\\)<br>\\(S_{n}=\\frac{n}{2}(t_{1}+t_{n})\\)<br>\\(t_{n}=t_{1}\\left(r^{n-1}\\right),\\ n\\in N\\)<br>\\(S_{n}=\\frac{t_{1}\\left(r^{n}-1\\right)}{r-1}\\)<br>\\(S_{n}=\\frac{t_{1}}{1-r}\\)"
 };
 function refPanelsHtml(units){var h="";units.forEach(function(u){if(REF_HTML[u])h+='<details class="refpanel"><summary>Formulas and facts for Unit '+u+": "+UNITS[u]+'</summary><div class="refbody">'+REF_HTML[u]+"</div></details>";});return h;}
 function stopExamTimer(){try{if(window._examTimerInt){clearInterval(window._examTimerInt);window._examTimerInt=null;}}catch(e){}}
