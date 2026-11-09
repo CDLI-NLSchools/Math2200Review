@@ -6108,7 +6108,115 @@ E("u9-crossover", 9, ["4.59", "4.60"], 3, "gen", function () {
 /* Exam Section B draws only from these entries (marks per question); every other
    entry is selected-response only in exam mode. Worksheet mode uses these plus
    all numeric-answer entries. */
-var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-lcd-choose":2,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u5-meeting-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3,"u4-rationalize-mono":1,"u4-rationalize-binomial":3};
+/* Unit test pool fix additions, November 9, 2026 (additions only).
+   Unit 8: two Level 3 CR entries at 3 and 2 marks (the unit's whole
+   Level 3 CR pool was one entry at 3 marks, which forms no pick).
+   Unit 1 (fragile): one Level 2 CR entry at 3 marks.
+   Unit 7 (fragile): one Level 3 CR entry at 2 marks. */
+
+/* U8a. Build and solve a quadratic inequality from a situation (4.23, 4.25, L3, CR 3) */
+E("u8-inequality-design",8,["4.23","4.25"],3,"gen",function(){
+  var mode=ri(1,3);
+  if(mode===1){
+    var t1=pick([1,2,3]),t2=t1+pick([2,3,4,5,6]);
+    var v=5*(t1+t2),H=5*t1*t2;
+    var dur=t2-t1;
+    return numq("A ball is thrown upward. Its height, in metres, after \\(t\\) seconds is \\(h(t) = -5t^2 + "+v+"t\\). For how many seconds is the ball higher than "+H+" metres?",
+      dur,0.01,
+      "The ball is higher than "+H+" m while \\(-5t^2 + "+v+"t > "+H+"\\), that is \\(5t^2 - "+v+"t + "+H+" < 0\\). The boundary equation \\(5t^2 - "+v+"t + "+H+" = 0\\) factors as \\(5(t - "+t1+")(t - "+t2+") = 0\\), with roots \\(t = "+t1+"\\) and \\(t = "+t2+"\\). The upward parabola \\(5t^2 - "+v+"t + "+H+"\\) is negative between its roots, so the ball is above "+H+" m from \\(t = "+t1+"\\) to \\(t = "+t2+"\\), a span of <b>"+dur+" seconds</b>.",
+      {mode:mode,t1:t1,t2:t2,ans:dur});
+  }
+  if(mode===2){
+    var r1=pick([2,3,4,5,6]),r2=r1+pick([3,4,5,6,7]);
+    var B=r1+r2,C=r1*r2,ans=r2-1;
+    return numq("A shop models its weekly profit, in hundreds of dollars, as \\(P(x) = -x^2 + "+B+"x - "+C+"\\), where \\(x\\) is the price, in dollars, of one item. What is the greatest whole-dollar price at which the shop still makes a profit?",
+      ans,0.01,
+      "Profit requires \\(P(x) > 0\\), that is \\(-x^2 + "+B+"x - "+C+" > 0\\), or \\(x^2 - "+B+"x + "+C+" < 0\\). The boundary equation factors: \\(x^2 - "+B+"x + "+C+" = (x - "+r1+")(x - "+r2+") = 0\\), with roots \\(x = "+r1+"\\) and \\(x = "+r2+"\\). The profit is positive strictly between the roots, so whole-dollar prices from "+(r1+1)+" to "+ans+" work, and the greatest is <b>"+ans+" dollars</b>.",
+      {mode:mode,r1:r1,r2:r2,ans:ans});
+  }
+  var s1=pick([1,2,3,4]),s2=s1+pick([2,3,4,5]);
+  var vv=2*(s1+s2),HH=2*s1*s2,dur3=s2-s1;
+  return numq("A drone rises and then descends. Its height, in metres, after \\(t\\) seconds is \\(h(t) = -2t^2 + "+vv+"t\\). For how many seconds is the drone higher than "+HH+" metres?",
+    dur3,0.01,
+    "The drone is higher than "+HH+" m while \\(-2t^2 + "+vv+"t > "+HH+"\\), that is \\(2t^2 - "+vv+"t + "+HH+" < 0\\). The boundary equation \\(2t^2 - "+vv+"t + "+HH+" = 0\\) factors as \\(2(t - "+s1+")(t - "+s2+") = 0\\), with roots \\(t = "+s1+"\\) and \\(t = "+s2+"\\). The upward parabola is negative between its roots, so the drone is above "+HH+" m for a span of <b>"+dur3+" seconds</b>.",
+    {mode:mode,s1:s1,s2:s2,ans:dur3});
+});
+
+/* U8b. Count the integers satisfying a quadratic inequality (4.24, L3, CR 2) */
+E("u8-sign-analysis-cr",8,["4.24"],3,"gen",function(){
+  var mode=ri(1,3);
+  var r1=ri(-4,2),gap=pick([3,4,5,6]),r2=r1+gap;
+  var B=-(r1+r2),C=r1*r2;
+  function fac(r){return r<0?"(x + "+(-r)+")":r>0?"(x - "+r+")":"x";}
+  function term(v,sym){if(v===0)return "";return (v<0?" - "+(-v):" + "+v)+sym;}
+  var expr="x^2"+term(B,"x")+term(C,"");
+  if(mode===1){
+    var ans=gap-1;
+    return numq("How many integers satisfy the inequality \\("+expr+" < 0\\)?",
+      ans,0.01,
+      "Factor: \\("+expr+" = "+fac(r1)+fac(r2)+"\\), with roots \\("+r1+"\\) and \\("+r2+"\\). The upward parabola is negative strictly between its roots, so the integers satisfying the inequality are those strictly between "+r1+" and "+r2+": there are "+r2+" - "+r1+" - 1 = <b>"+ans+"</b> of them.",
+      {mode:mode,r1:r1,r2:r2,ans:ans});
+  }
+  if(mode===2){
+    var ans2=gap+1;
+    return numq("How many integers satisfy the inequality \\("+expr+" \\leq 0\\)?",
+      ans2,0.01,
+      "Factor: \\("+expr+" = "+fac(r1)+fac(r2)+"\\), with roots \\("+r1+"\\) and \\("+r2+"\\). The upward parabola is negative between its roots and zero at them, and the inequality allows equality, so the integers from "+r1+" to "+r2+" inclusive satisfy it: "+r2+" - "+r1+" + 1 = <b>"+ans2+"</b> of them.",
+      {mode:mode,r1:r1,r2:r2,ans:ans2});
+  }
+  var ans3=gap-1;
+  var negExpr="-x^2"+term(-B,"x")+term(-C,"");
+  return numq("How many integers satisfy the inequality \\("+negExpr+" > 0\\)?",
+    ans3,0.01,
+    "Multiply by \\(-1\\) and reverse the inequality: \\("+negExpr+" > 0\\) is the same as \\("+expr+" < 0\\). Factor: \\("+expr+" = "+fac(r1)+fac(r2)+"\\), with roots \\("+r1+"\\) and \\("+r2+"\\); the expression is negative strictly between the roots, giving "+r2+" - "+r1+" - 1 = <b>"+ans3+"</b> integers.",
+    {mode:mode,r1:r1,r2:r2,ans:ans3});
+});
+
+/* U1. Ratios and reference angle from a terminal point (7.13, L2, CR 3) */
+E("u1-terminal-point-cr",1,["7.13"],2,"gen",function(){
+  var triples=[[3,4,5],[5,12,13],[8,15,17],[7,24,25],[20,21,29],[9,40,41],[12,35,37]];
+  var t=pick(triples),sx=pick([1,-1]),sy=pick([1,-1]);
+  var x=sx*t[0],y=sy*t[1],r=t[2],mode=ri(1,2);
+  if(mode===1){
+    var cosv=Math.round(100*x/r)/100;
+    return numq("The point P("+x+", "+y+") lies on the terminal arm of an angle \\(\\theta\\) in standard position. What is the value of \\(\\cos\\theta\\), to two decimal places?",
+      cosv,0.02,
+      "The distance from the origin is \\(r = \\sqrt{"+x+"^2 + "+y+"^2} = \\sqrt{"+(t[0]*t[0]+t[1]*t[1])+"} = "+r+"\\). Then \\[ \\cos\\theta = \\frac{x}{r} = \\frac{"+x+"}{"+r+"} \\approx "+cosv+" \\] So \\(\\cos\\theta\\) is <b>"+cosv+"</b>.",
+      {mode:mode,x:x,y:y,ans:cosv});
+  }
+  var ref=Math.round(Math.atan2(Math.abs(y),Math.abs(x))*180/Math.PI);
+  return numq("The point P("+x+", "+y+") lies on the terminal arm of an angle \\(\\theta\\) in standard position. What is the reference angle of \\(\\theta\\), to the nearest degree?",
+    ref,0.02,
+    "The reference angle is the acute angle between the terminal arm and the x-axis. From the point, \\[ \\tan(\\theta_R) = \\frac{|y|}{|x|} = \\frac{"+Math.abs(y)+"}{"+Math.abs(x)+"} \\] so \\(\\theta_R = \\tan^{-1}\\left(\\frac{"+Math.abs(y)+"}{"+Math.abs(x)+"}\\right) \\approx "+ref+"^\\circ\\). The reference angle is <b>"+ref+" degrees</b>.",
+    {mode:mode,x:x,y:y,ans:ref});
+});
+
+/* U7. Solve a system in context and select the root the context allows (4.53, 4.54, L3, CR 2) */
+E("u7-context-roots-cr",7,["4.53","4.54"],3,"gen",function(){
+  var mode=ri(1,3);
+  if(mode===1){
+    var t1=pick([1,2,3]),t2=t1+pick([2,3,4]);
+    var v=5*(t1+t2),H=5*t1*t2;
+    return numq("A ball is thrown upward. Its height, in metres, after \\(t\\) seconds is \\(h(t) = -5t^2 + "+v+"t\\). A camera flash fires at the instant the ball is at a height of "+H+" metres on its way down. At what time, in seconds, does the flash fire?",
+      t2,0.01,
+      "Set the height equal to "+H+": \\(-5t^2 + "+v+"t = "+H+"\\), so \\(5t^2 - "+v+"t + "+H+" = 0\\), which factors as \\(5(t - "+t1+")(t - "+t2+") = 0\\). The ball is at "+H+" m at \\(t = "+t1+"\\) s on the way up and at \\(t = "+t2+"\\) s on the way down. The flash fires on the way down, at <b>"+t2+" seconds</b>.",
+      {mode:mode,t1:t1,t2:t2,ans:t2});
+  }
+  if(mode===2){
+    var s1=pick([2,3,4,5,6,7,8]),s2=s1+pick([2,3,4,5,6]);
+    var per=2*(s1+s2),area=s1*s2;
+    return numq("A rectangular garden has a perimeter of "+per+" metres and an area of "+area+" square metres. What is the length, in metres, of the longer side of the garden?",
+      s2,0.01,
+      "Let the side lengths be \\(x\\) and \\(y\\). The perimeter gives \\(x + y = "+(s1+s2)+"\\), and the area gives \\(xy = "+area+"\\). The sides are the roots of \\(x^2 - "+(s1+s2)+"x + "+area+" = 0\\), which factors as \\((x - "+s1+")(x - "+s2+") = 0\\), so the sides are "+s1+" m and "+s2+" m. The longer side is <b>"+s2+" metres</b>.",
+      {mode:mode,s1:s1,s2:s2,ans:s2});
+  }
+  var n=ri(2,11),d=pick([2,3,4,5,6]),prod=n*(n+d),big=n+d;
+  return numq("Two whole numbers differ by "+d+". Their product is "+prod+". What is the larger of the two numbers?",
+    big,0.01,
+    "Let the smaller number be \\(x\\); the larger is \\(x + "+d+"\\). The product condition gives \\(x(x + "+d+") = "+prod+"\\), that is \\(x^2 + "+d+"x - "+prod+" = 0\\), which factors as \\((x - "+n+")(x + "+(n+d)+") = 0\\). The roots are "+n+" and "+(-(n+d))+"; the context uses whole numbers, so the smaller number is "+n+" and the larger is <b>"+big+"</b>.",
+    {mode:mode,n:n,d:d,ans:big});
+});
+var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-lcd-choose":2,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u5-meeting-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3,"u4-rationalize-mono":1,"u4-rationalize-binomial":3,"u8-inequality-design":3,"u8-sign-analysis-cr":2,"u1-terminal-point-cr":3,"u7-context-roots-cr":2};
 /* BANK-SRC-END */
 </script>
 
