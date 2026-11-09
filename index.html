@@ -940,7 +940,7 @@ E("u1-read-sketch", 1, ["7.7"], 1, "gen", function () {
 });
 
 /* ---- 7.4: sine law, find a side or an angle ---- */
-E("u1-sine-law", 1, ["7.4"], 2, "gen", function () {
+E("u1-sine-law", 1, ["7.4"], 1, "gen", function () {
   if (Math.random() < 0.5) {
     var A = ri(25, 80), B = ri(25, 155 - A), C = 180 - A - B;
     var a = ri(6, 38);
@@ -965,7 +965,7 @@ E("u1-sine-law", 1, ["7.4"], 2, "gen", function () {
 });
 
 /* ---- 7.6: cosine law, find a side or an angle ---- */
-E("u1-cosine-law", 1, ["7.6"], 2, "gen", function () {
+E("u1-cosine-law", 1, ["7.6"], 1, "gen", function () {
   if (Math.random() < 0.5) {
     var A = ri(35, 140), b = ri(7, 30), c = ri(7, 30);
     var a = Math.sqrt(b * b + c * c - 2 * b * c * Math.cos(A * Math.PI / 180));
@@ -1020,7 +1020,7 @@ E("u1-context-distance", 1, ["7.2", "7.22"], 2, "gen", function () {
 });
 
 /* ---- 7.10, 7.11: angles sharing a reference angle; reflections ---- */
-E("u1-same-reference", 1, ["7.10", "7.11"], 2, "gen", function () {
+E("u1-same-reference", 1, ["7.10", "7.11"], 1, "gen", function () {
   if (Math.random() < 0.5) {
     var r = pick([15, 20, 25, 30, 35, 40, 50, 55, 60, 65, 70, 75, 80]);
     function setStr(arr) { return arr.join("°, ") + "°"; }
@@ -1051,7 +1051,7 @@ E("u1-same-reference", 1, ["7.10", "7.11"], 2, "gen", function () {
 });
 
 /* ---- 7.14: distance from the origin to a point on the terminal arm ---- */
-E("u1-point-distance", 1, ["7.14"], 2, "gen", function () {
+E("u1-point-distance", 1, ["7.14"], 1, "gen", function () {
   var bases = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29], [9, 40, 41]];
   var bs = pick(bases), s = ri(1, 3);
   var lx = bs[0] * s, ly = bs[1] * s, r = bs[2] * s;
@@ -1101,7 +1101,7 @@ E("u1-point-angle", 1, ["7.12", "7.17"], 2, "gen", function () {
 });
 
 /* ---- 7.18: ratio values at axis angles, from a point on the terminal arm ---- */
-E("u1-axis-ratios", 1, ["7.18"], 2, "gen", function () {
+E("u1-axis-ratios", 1, ["7.18"], 1, "gen", function () {
   var dirs = [
     { deg: 0, dx: 1, dy: 0 }, { deg: 90, dx: 0, dy: 1 }, { deg: 180, dx: -1, dy: 0 },
     { deg: 270, dx: 0, dy: -1 }, { deg: 360, dx: 1, dy: 0 }
@@ -1226,7 +1226,7 @@ E("u1-exact-values", 1, ["7.20"], 2, "gen", function () {
 });
 
 /* ---- 7.16: which sign statement is true for a given angle ---- */
-E("u1-sign-statements", 1, ["7.16"], 2, "gen", function () {
+E("u1-sign-statements", 1, ["7.16"], 1, "gen", function () {
   var q = pick([1, 2, 3, 4]);
   var deg = q === 1 ? ri(8, 82) : q === 2 ? ri(98, 172) : q === 3 ? ri(188, 262) : ri(278, 352);
   var stmts = [
@@ -1495,7 +1495,7 @@ E("u2-vertex-read",2,["4.38"],1,"gen",function(){
 });
 
 /* ---------- 4.27: number of x-intercepts from a and q (L2) ---------- */
-E("u2-intercepts-count",2,["4.27"],2,"gen",function(){
+E("u2-intercepts-count",2,["4.27"],1,"gen",function(){
   var mode=pick(["two","two","one","none","none"]);
   var a=pick([1,2,3,-1,-2,-3]), q;
   if(mode==="one") q=0;
@@ -1517,7 +1517,7 @@ E("u2-intercepts-count",2,["4.27"],2,"gen",function(){
 });
 
 /* ---------- 4.28: features of a graphed parabola in vertex form (L2) ---------- */
-E("u2-graph-features",2,["4.28"],2,"gen",function(){
+E("u2-graph-features",2,["4.28"],1,"gen",function(){
   var a=pick([1,2,-1,-2]);
   var p=0, q=0;
   while(p===0) p=ri(-4,4);
@@ -1630,7 +1630,7 @@ E("u2-complete-square",2,["4.43","4.45"],2,"gen",function(){
 });
 
 /* ---------- 4.42: reasoning inside completing the square (L2, var) ---------- */
-E("u2-cts-reasoning",2,["4.42"],2,"var",varset([
+E("u2-cts-reasoning",2,["4.42"],1,"var",varset([
   function(){
     var b=pick([2,4,6,8,10,-2,-4,-6,-8,-10]), h=b/2, h2=h*h;
     var facS="(x"+(h>0?" + "+h:" - "+(-h))+")^2";
@@ -2156,7 +2156,7 @@ E("u3-factor-trinomial",3,["3.15"],2,"gen",function(){
 });
 
 /* ---------- 3.16: is a binomial a factor? Use the factor theorem (L2) ---------- */
-E("u3-factor-test",3,["3.16"],2,"gen",function(){
+E("u3-factor-test",3,["3.16"],1,"gen",function(){
   var isFac=Math.random()<0.5;
   var k=ri(-6,6); if(k===0) k=3;
   var al=pick([1,2,3]), be=ri(-6,6);
@@ -2821,7 +2821,7 @@ E("u4-root-of-square",4,["1.11"],1,"gen",function(){
 });
 
 /* ---------- 1.4: mixed radical with variables to entire radical (L1) ---------- */
-E("u4-var-to-entire",4,["1.4"],1,"gen",function(){
+E("u4-var-to-entire",4,["1.4"],2,"gen",function(){
   var v=pick(["x","y","t","m"]),p=ri(2,6),q=ri(0,3),s=ri(0,2),r;
   if(q===0&&s===0)q=1;
   if(s===0)r=pick([2,3,5,6,7,10,11,13]);
@@ -3056,7 +3056,7 @@ E("u4-simplify-ops",4,["1.13"],2,"gen",function(){
 });
 
 /* ---------- 1.14: rationalize a monomial denominator (L2) ---------- */
-E("u4-rationalize-mono",4,["1.14"],2,"gen",function(){
+E("u4-rationalize-mono",4,["1.14"],1,"gen",function(){
   var shape=pick(["mono","monoCoef"]);
   if(shape==="mono"||shape==="monoCoef"){
     var n=ri(2,9),m=pick([2,3,5,6,7,10]);
@@ -3141,7 +3141,7 @@ E("u4-solve-radical",4,["1.16","1.17"],2,"gen",function(){
 });
 
 /* ---------- 1.18: verify a claimed root by substitution (L2) ---------- */
-E("u4-verify-roots",4,["1.18"],2,"gen",function(){
+E("u4-verify-roots",4,["1.18"],1,"gen",function(){
   var shape=pick(["simple","simple","validStmt","extrValue"]);
   if(shape==="simple"){
     var b=pick([-9,-7,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9,11,13,15]),c=ri(2,9);
@@ -3784,7 +3784,7 @@ E("u5-lcd-choose",5,["3.11"],2,"gen",function(){
 });
 
 /* ---------- 3.13: simplify a complex fraction (L2) ---------- */
-E("u5-complex-fraction",5,["3.13"],2,"gen",function(){
+E("u5-complex-fraction",5,["3.13"],1,"gen",function(){
   var mode=pick(["numeric","singleVar","binomial"]);
   if(mode==="numeric"){
     var a=ri(2,9),b=ri(2,9),c=ri(2,9),d=ri(2,9),t=0;
@@ -4200,7 +4200,7 @@ E("u6-simplify-expr",6,["1.10"],2,"gen",function(){
 });
 
 /* ---------- 4.1 and 4.2: features of a graphed absolute value function (L2) ---------- */
-E("u6-graph-features",6,["4.1","4.2"],2,"gen",function(){
+E("u6-graph-features",6,["4.1","4.2"],1,"gen",function(){
   var fam=pick(["linear","linear","quad"]);
   if(fam==="linear"){
     var a=pick([1,2,3,-1,-2]);
@@ -4296,7 +4296,7 @@ E("u6-piecewise",6,["4.3"],2,"gen",function(){
 });
 
 /* ---------- 4.4: solve an absolute value equation graphically (L2) ---------- */
-E("u6-solve-graphical",6,["4.4"],2,"gen",function(){
+E("u6-solve-graphical",6,["4.4"],1,"gen",function(){
   var a=pick([1,2,3]);
   var s1=0, s2=0, att=0;
   while(att<200){
@@ -4416,7 +4416,7 @@ E("u6-solve-quadratic",6,["4.6"],2,"gen",function(){
 });
 
 /* ---------- 4.5: problem solving with a linear absolute value model (L2) ---------- */
-E("u6-abs-context",6,["4.5"],2,"gen",function(){
+E("u6-abs-context",6,["4.5"],1,"gen",function(){
   var fam=pick(["bolt","bolt","storage","package"]);
   if(fam==="bolt"){
     var ctxs=[
@@ -4809,7 +4809,7 @@ function u7wrongPts(solves, yOn, roots, n) { /* points on one curve (via yOn) th
 }
 
 /* ---------- 4.50, 4.48: read the solutions of a system from its graph (L2) ---------- */
-E("u7-graph-solutions", 7, ["4.50", "4.48"], 2, "gen", function () {
+E("u7-graph-solutions", 7, ["4.50", "4.48"], 1, "gen", function () {
   var S = u7makeLQ2(), q = S.quad;
   var f = function (x) { return q[0] * x * x + q[1] * x + q[2]; }, g = function (x) { return S.m * x + S.b; };
   function solves(x, y) { return f(x) === y && g(x) === y; }
@@ -5358,7 +5358,7 @@ var U8CTX = [
     text: function (cap) { return "Sam earns $15 per hour tutoring and $11 per hour shelving books at a library. Sam wants to earn at least $" + cap + " next week."; },
     total: "total earnings in dollars", pairWords: "hours of tutoring and hours shelving books" }
 ];
-E("u8-model-context", 8, ["4.19"], 2, "gen", function () {
+E("u8-model-context", 8, ["4.19"], 1, "gen", function () {
   var ctx = pick(U8CTX), cap = pick(ctx.caps), shape = pick(["model", "feasible"]);
   var sym = ctx.rel, symT = U8SYM[sym];
   var body = ctx.p1 + ctx.v1 + " + " + ctx.p2 + ctx.v2;
@@ -5767,7 +5767,7 @@ E("u9-arith-nth-count", 9, ["4.55", "4.56", "4.59"], 2, "gen", function () {
 });
 
 /* ---- 4.61: sum of the first n terms of an arithmetic sequence ---- */
-E("u9-arith-sum-formula", 9, ["4.61"], 2, "gen", function () {
+E("u9-arith-sum-formula", 9, ["4.61"], 1, "gen", function () {
   var t1 = ri(-15, 30);
   var d = ri(-8, 10); while (d === 0) d = ri(-8, 10);
   var n = ri(8, 40);
@@ -5823,7 +5823,7 @@ E("u9-arith-find-missing", 9, ["4.62"], 2, "gen", function () {
 });
 
 /* ---- 4.63, 4.66: a later term of a geometric sequence ---- */
-E("u9-geo-nth-term", 9, ["4.63", "4.66"], 2, "gen", function () {
+E("u9-geo-nth-term", 9, ["4.63", "4.66"], 1, "gen", function () {
   var RT = [
     { rn: 2, rd: 1, t1: [3, 4, 5, 6, 7, 8], n: [4, 5, 6, 7] }, { rn: 3, rd: 1, t1: [2, 3, 4, 5], n: [4, 5, 6] },
     { rn: 4, rd: 1, t1: [1, 2, 3], n: [4, 5] }, { rn: -2, rd: 1, t1: [2, 3, 4, 5, 6], n: [4, 5, 6] },
