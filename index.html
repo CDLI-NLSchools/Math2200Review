@@ -1783,16 +1783,6 @@ E("u2-write-from-characteristics",2,["4.40"],2,"gen",function(){
 /* ---------- 4.46: write a quadratic model, with assumptions (L2, var) ---------- */
 E("u2-model-situation",2,["4.46"],2,"var",varset([
   function(){
-    var v=pick([12,15,18,20]), h0=pick([1,2]);
-    return mcq("A ball is thrown upward from a platform "+h0+" m above the ground, with an initial velocity of "+v+" m/s. The height of the ball is modelled by a function of the form \\(h(t) = -4.9t^2 + v_0 t + h_0\\), where \\(t\\) is the time in seconds. Which function models this ball?",
-      "\\(h(t) = -4.9t^2 + "+v+"t + "+h0+"\\)",
-      ["\\(h(t) = -4.9t^2 + "+v+"t\\)",
-       "\\(h(t) = -4.9t^2 + "+h0+"t + "+v+"\\)",
-       "\\(h(t) = 4.9t^2 + "+v+"t + "+h0+"\\)"],
-      "In the template, \\(v_0\\) is the initial velocity, "+v+" m/s, and \\(h_0\\) is the starting height, "+h0+" m, so the model is \\(h(t) = -4.9t^2 + "+v+"t + "+h0+"\\). The model assumes the only force acting after the throw is gravity (the \\(-4.9\\) comes from half of \\(9.8\\ \\mathrm{m/s^2}\\)) and that air resistance is ignored.",
-      {ctx:"thrown ball", v:v, h0:h0});
-  },
-  function(){
     var price=pick([30,40,50]), cut=pick([1,2]), base=pick([150,200,250]), gain=pick([5,10,15]);
     return mcq("A gym has "+base+" members who each pay $"+price+" per month. For each $"+cut+" monthly discount the gym offers, "+gain+" new members join. Let \\(x\\) be the number of $"+cut+" discounts offered. Which function gives the monthly revenue \\(R\\), in dollars?",
       "\\(R(x) = ("+price+" - "+cut+"x)("+base+" + "+gain+"x)\\)",
@@ -1821,6 +1811,20 @@ E("u2-model-situation",2,["4.46"],2,"var",varset([
        "\\(P(x) = x + ("+S+" - x)\\)"],
       "If one number is \\(x\\) and the two add to "+S+", the other number is \\("+S+" - x\\). The product is one number times the other: \\(P(x) = x("+S+" - x)\\). No further assumption is needed; the only condition is that the two numbers add to "+S+".",
       {ctx:"two numbers", S:S});
+  }
+]));
+
+/* ---------- 4.46: substitute into a model form printed in the stem (L1, var; split from u2-model-situation under ruling 8, Nov 13, 2026) ---------- */
+E("u2-model-situation-evaluate",2,["4.46"],1,"var",varset([
+  function(){
+    var v=pick([12,15,18,20]), h0=pick([1,2]);
+    return mcq("A ball is thrown upward from a platform "+h0+" m above the ground, with an initial velocity of "+v+" m/s. The height of the ball is modelled by a function of the form \\(h(t) = -4.9t^2 + v_0 t + h_0\\), where \\(t\\) is the time in seconds. Which function models this ball?",
+      "\\(h(t) = -4.9t^2 + "+v+"t + "+h0+"\\)",
+      ["\\(h(t) = -4.9t^2 + "+v+"t\\)",
+       "\\(h(t) = -4.9t^2 + "+h0+"t + "+v+"\\)",
+       "\\(h(t) = 4.9t^2 + "+v+"t + "+h0+"\\)"],
+      "In the template, \\(v_0\\) is the initial velocity, "+v+" m/s, and \\(h_0\\) is the starting height, "+h0+" m, so the model is \\(h(t) = -4.9t^2 + "+v+"t + "+h0+"\\). The model assumes the only force acting after the throw is gravity (the \\(-4.9\\) comes from half of \\(9.8\\ \\mathrm{m/s^2}\\)) and that air resistance is ignored.",
+      {ctx:"thrown ball", v:v, h0:h0});
   }
 ]));
 
@@ -2112,9 +2116,9 @@ E("u3-roots-zeros",3,["4.9"],1,"gen",function(){
     {mode:mode, a:a});
 });
 
-/* ---------- 3.15: factor trinomials and differences of squares (L2) ---------- */
-E("u3-factor-trinomial",3,["3.15"],2,"gen",function(){
-  var fam=pick(["monic","nonmonic","diffsq"]);
+/* ---------- 3.15: factor trinomials and differences of squares (L1; the non-monic family was split out as u3-factor-trinomial-nonmonic under ruling 8, Nov 13, 2026) ---------- */
+E("u3-factor-trinomial",3,["3.15"],1,"gen",function(){
+  var fam=pick(["monic","diffsq"]);
   if(fam==="monic"){
     var r1=ri(-9,9), r2=ri(-9,9), att=0;
     while(att<200 && (r1===0 || r2===0)){ att++; r1=ri(-9,9); r2=ri(-9,9); }
@@ -2130,33 +2134,6 @@ E("u3-factor-trinomial",3,["3.15"],2,"gen",function(){
       "Look for two numbers with product \\("+c+"\\) and sum \\("+b+"\\): the numbers are \\("+(-r1)+"\\) and \\("+(-r2)+"\\), since \\(("+(-r1)+") \\times ("+(-r2)+") = "+c+"\\) and \\(("+(-r1)+") + ("+(-r2)+") = "+b+"\\)."+
       "\\[ "+u3QuadS(1,b,c)+" = "+key+" \\]"+
       "So the factorization is <b>\\("+key+"\\)</b>.",
-      {fam:fam});
-  }
-  if(fam==="nonmonic"){
-    var att2=0, p,q,r,s,a2,b2,c2,key2;
-    while(att2<300){
-      att2++;
-      p=pick([1,2,3]); r=pick([1,2,3]); q=ri(-6,6); s=ri(-6,6);
-      if(q===0 || s===0) continue;
-      a2=p*r; b2=p*s+q*r; c2=q*s;
-      if(a2<2) continue;
-      key2=u3TwoFac(u3FacLinS(p,q), u3FacLinS(r,s));
-      break;
-    }
-    function expN(p1,q1,p2,q2){ return [p1*p2, p1*q2+q1*p2, q1*q2]; }
-    var specs=[[p,-q,r,s],[p,q,r,-s],[p,-q,r,-s],[p,s,r,q],[r,q,p,s],[p,q+1,r,s],[p,q,r,s+1]];
-    var cands2=[];
-    specs.forEach(function(sp){ var e=expN(sp[0],sp[1],sp[2],sp[3]);
-      if(e[0]!==a2 || e[1]!==b2 || e[2]!==c2)
-        cands2.push(u3TwoFac(u3FacLinS(sp[0],sp[1]), u3FacLinS(sp[2],sp[3]))); });
-    function xTerm(co){ if(co===0) return ""; var t=(Math.abs(co)===1?"x":Math.abs(co)+"x"); return (co<0?" - ":" + ")+t; }
-    function cTerm(co){ if(co===0) return ""; return (co<0?" - "+(-co):" + "+co); }
-    var expLine=a2+"x^2"+xTerm(p*s)+xTerm(q*r)+cTerm(q*s);
-    return mcq("Factor: \\("+u3QuadS(a2,b2,c2)+"\\)",
-      "\\("+key2+"\\)", u3Opts("\\("+key2+"\\)", cands2.map(function(s2){ return "\\("+s2+"\\)"; })),
-      "The factor pair "+key2+" can be checked by expanding:"+
-      "\\[ \\begin{aligned} "+key2+" &= "+expLine+" \\\\ &= "+u3QuadS(a2,b2,c2)+" \\end{aligned} \\]"+
-      "which matches the given trinomial, so the factorization is <b>\\("+key2+"\\)</b>.",
       {fam:fam});
   }
   /* difference of squares */
@@ -2183,6 +2160,36 @@ E("u3-factor-trinomial",3,["3.15"],2,"gen",function(){
     "\\[ "+stemExpr+" = "+key3+" \\]"+
     "So the factorization is <b>\\("+key3+"\\)</b>.",
     {fam:fam});
+});
+
+/* ---------- 3.15: factor non-monic trinomials (L2; split from u3-factor-trinomial under ruling 8, Nov 13, 2026) ---------- */
+E("u3-factor-trinomial-nonmonic",3,["3.15"],2,"gen",function(){
+  var fam="nonmonic";
+    var att2=0, p,q,r,s,a2,b2,c2,key2;
+    while(att2<300){
+      att2++;
+      p=pick([1,2,3]); r=pick([1,2,3]); q=ri(-6,6); s=ri(-6,6);
+      if(q===0 || s===0) continue;
+      a2=p*r; b2=p*s+q*r; c2=q*s;
+      if(a2<2) continue;
+      key2=u3TwoFac(u3FacLinS(p,q), u3FacLinS(r,s));
+      break;
+    }
+    function expN(p1,q1,p2,q2){ return [p1*p2, p1*q2+q1*p2, q1*q2]; }
+    var specs=[[p,-q,r,s],[p,q,r,-s],[p,-q,r,-s],[p,s,r,q],[r,q,p,s],[p,q+1,r,s],[p,q,r,s+1]];
+    var cands2=[];
+    specs.forEach(function(sp){ var e=expN(sp[0],sp[1],sp[2],sp[3]);
+      if(e[0]!==a2 || e[1]!==b2 || e[2]!==c2)
+        cands2.push(u3TwoFac(u3FacLinS(sp[0],sp[1]), u3FacLinS(sp[2],sp[3]))); });
+    function xTerm(co){ if(co===0) return ""; var t=(Math.abs(co)===1?"x":Math.abs(co)+"x"); return (co<0?" - ":" + ")+t; }
+    function cTerm(co){ if(co===0) return ""; return (co<0?" - "+(-co):" + "+co); }
+    var expLine=a2+"x^2"+xTerm(p*s)+xTerm(q*r)+cTerm(q*s);
+    return mcq("Factor: \\("+u3QuadS(a2,b2,c2)+"\\)",
+      "\\("+key2+"\\)", u3Opts("\\("+key2+"\\)", cands2.map(function(s2){ return "\\("+s2+"\\)"; })),
+      "The factor pair "+key2+" can be checked by expanding:"+
+      "\\[ \\begin{aligned} "+key2+" &= "+expLine+" \\\\ &= "+u3QuadS(a2,b2,c2)+" \\end{aligned} \\]"+
+      "which matches the given trinomial, so the factorization is <b>\\("+key2+"\\)</b>.",
+      {fam:fam});
 });
 
 /* ---------- 3.16: is a binomial a factor? Use the factor theorem (L2) ---------- */
@@ -6246,7 +6253,7 @@ E("u7-context-roots-cr",7,["4.53","4.54"],3,"gen",function(){
     "Let the smaller number be \\(x\\); the larger is \\(x + "+d+"\\). The product condition gives \\(x(x + "+d+") = "+prod+"\\), that is \\(x^2 + "+d+"x - "+prod+" = 0\\), which factors as \\((x - "+n+")(x + "+(n+d)+") = 0\\). The roots are "+n+" and "+(-(n+d))+"; the context uses whole numbers, so the smaller number is "+n+" and the larger is <b>"+big+"</b>.",
     {mode:mode,n:n,d:d,ans:big});
 });
-var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-lcd-choose":2,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u5-meeting-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3,"u4-rationalize-mono":1,"u4-rationalize-binomial":3,"u8-inequality-design":3,"u8-sign-analysis-cr":2,"u1-terminal-point-cr":3,"u7-context-roots-cr":2};
+var CR_MARKS={"u1-quadrant":1,"u1-reference-angle":1,"u1-read-sketch":1,"u1-sine-law":2,"u1-cosine-law":2,"u1-context-distance":3,"u1-same-reference":2,"u1-point-distance":2,"u1-point-ratios":2,"u1-point-angle":2,"u1-axis-ratios":2,"u1-solve-equation":2,"u1-exact-values":2,"u1-ambiguous-case":3,"u1-law-proof-steps":3,"u2-translations":1,"u2-vertex-read":1,"u2-intercepts-count":2,"u2-vertex-standard":2,"u2-complete-square":2,"u2-cts-reasoning":2,"u2-why-quadratic":2,"u2-write-from-characteristics":3,"u2-model-situation":3,"u2-model-situation-evaluate":3,"u2-analyze-problem":3,"u2-error-complete-square":3,"u2-vertex-rule":3,"u2-evaluate-claim":4,"u3-factor-common":1,"u3-roots-zeros":1,"u3-factor-trinomial":2,"u3-factor-trinomial-nonmonic":2,"u3-factor-test":2,"u3-factor-func-diff":2,"u3-solve-strategies":2,"u3-discriminant-k":3,"u3-problem-model":3,"u3-derive-formula":4,"u3-error-analysis":3,"u3-method-choice":3,"u4-convert-numeric":1,"u4-root-of-square":1,"u4-var-to-entire":1,"u4-var-to-mixed":2,"u4-order-radicals":2,"u4-identity-truth":2,"u4-defined-values":2,"u4-simplify-ops":2,"u4-solve-radical":2,"u4-verify-roots":2,"u4-conjugate-why":3,"u4-extraneous-why":3,"u4-model-radical":3,"u5-npv-basic":1,"u5-npv-quadratic":2,"u5-equivalent-form":1,"u5-equivalent-restrictions":2,"u5-simplify-basic":1,"u5-simplify-trinomial":2,"u5-simplify-evaluate":2,"u5-error-cancel":2,"u5-multiply":2,"u5-divide":2,"u5-lcd":1,"u5-lcd-choose":2,"u5-add-subtract":2,"u5-complex-fraction":2,"u5-solve-linear":2,"u5-solve-extraneous":3,"u5-word-problem":3,"u5-meeting-problem":3,"u6-evaluate-abs":1,"u6-order-abs":1,"u6-distance":1,"u6-simplify-expr":2,"u6-equation-from-graph":2,"u6-piecewise":2,"u6-solve-graphical":2,"u6-solve-linear":2,"u6-solve-quadratic":3,"u6-abs-context":2,"u6-recip-features":2,"u6-invariant-points":2,"u6-no-solution":2,"u6-original-from-reciprocal":3,"u7-graph-solutions":2,"u7-graph-count":1,"u7-intersection-meaning":1,"u7-solve-linquad":2,"u7-solve-quadquad":2,"u7-classify-algebraic":2,"u7-model-two-numbers":3,"u7-context-projectile":3,"u7-context-area":2,"u7-tangent-param":4,"u8-solve-linear-basic":1,"u8-numberline-read":1,"u8-solve-linear-flip":2,"u8-model-context":3,"u8-quad-solve-inside":2,"u8-quad-solve-special":3,"u8-numberline-quad":2,"u8-quad-graph-id":2,"u8-both-hold":3,"u9-arith-diff":1,"u9-geo-ratio":1,"u9-arith-general-term":2,"u9-arith-nth-count":2,"u9-arith-sum-formula":2,"u9-arith-series-context":2,"u9-arith-find-missing":2,"u9-geo-nth-term":2,"u9-geo-sum-finite":2,"u9-geo-find-index":2,"u9-infinite-sum":2,"u9-arith-graph-link":2,"u9-derive-formulas":4,"u9-evaluate-offers":3,"u9-crossover":3,"u4-rationalize-mono":1,"u4-rationalize-binomial":3,"u8-inequality-design":3,"u8-sign-analysis-cr":2,"u1-terminal-point-cr":3,"u7-context-roots-cr":2};
 /* BANK-SRC-END */
 </script>
 
