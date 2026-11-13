@@ -2994,7 +2994,7 @@ E("u4-identity-truth",4,["1.11"],2,"gen",function(){
 });
 
 /* ---------- 1.12: values for which a radical expression is defined (L2) ---------- */
-E("u4-defined-values",4,["1.12"],2,"gen",function(){
+E("u4-defined-values",4,["1.12"],1,"gen",function(){
   var shape=pick(["pos","pos","neg","denom"]);
   var c0=pick([-6,-5,-4,-3,-2,-1,1,2,3,4,5,6]);
   if(shape==="pos"){
@@ -3759,7 +3759,7 @@ E("u5-add-subtract",5,["3.12","3.11"],2,"gen",function(){
 });
 
 /* ---------- 3.11: choose the lowest common denominator for a pair or triple (L2) ---------- */
-E("u5-lcd-choose",5,["3.11"],2,"gen",function(){
+E("u5-lcd-choose",5,["3.11"],1,"gen",function(){
   var mode=pick(["shared","shared","power","coeff","triple"]);
   function threeRoots(){var rs=u5twoRoots(),r=rs[0],s=rs[1],t=pick(U5NZ),g=0;while((t===r||t===s)&&g<60){t=pick(U5NZ);g++;}return [r,s,t];}
   if(mode==="shared"){
@@ -5441,7 +5441,7 @@ E("u8-quad-solve-inside", 8, ["4.24", "4.25"], 2, "gen", function () {
 });
 
 /* ---------- 4.24, 4.25, 4.26: negative leading coefficient and perfect-square cases (L2) ---------- */
-E("u8-quad-solve-special", 8, ["4.24", "4.25", "4.26"], 2, "gen", function () {
+E("u8-quad-solve-special", 8, ["4.24", "4.25", "4.26"], 1, "gen", function () {
   var shape = pick(["neg", "neg", "square"]);
   var sym = pick(["lt", "le", "gt", "ge"]), incl = u8incl(sym);
   if (shape === "neg") {
@@ -5499,7 +5499,7 @@ E("u8-numberline-quad", 8, ["4.26"], 2, "gen", function () {
 });
 
 /* ---------- 4.20, 4.21: identify a quadratic inequality from its graph (L2) ---------- */
-E("u8-quad-graph-id", 8, ["4.20", "4.21"], 2, "gen", function () {
+E("u8-quad-graph-id", 8, ["4.20", "4.21"], 1, "gen", function () {
   var h = ri(-3, 3), k = ri(-4, 3);
   if (h === 0 && k === 0) k = 2;
   var a = pick([1, -1]), dashed = pick([true, false]), above = pick([true, false]);
